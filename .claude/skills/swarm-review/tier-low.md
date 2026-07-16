@@ -12,7 +12,7 @@ Read diff against resolved baseline (already computed by SKILL.md step 2). Ident
 
 ## Phase 2: Stage 1 — Correctness (single reviewer)
 
-> **Reviewer model**: `worker-reviewer` launch this tier use resolved `--reviewer` overlay value (tier=low default `haiku`; escalate to `sonnet` when structural markers from `classify.md:48-61` present). See `overlays.md` reviewer axis.
+> **Reviewer model**: `worker-reviewer` launch this tier use resolved `--reviewer` overlay value (tier=low default `sonnet`; `haiku` only via explicit user override). See `overlays.md` reviewer axis.
 
 Launch **1** `worker-reviewer` (focus: `spec-compliance`, phase: `post-implementation`) to review diff. Phase `post-implementation` because review run against **Implement-phase output** — code already exist (not Stub-phase scaffolding, not Specify-phase tests). Reviewer apply:
 
@@ -35,7 +35,7 @@ Two-Way Door scope. No security, performance, documentation, or architect perspe
 
 ## Phase 5: Cross-model — skipped
 
-`codex: off`. If user explicit pass `--codex`, run pass anyway (user override) with `--model luna` (`gpt-5.6-luna`; `--codex-model` overrides). Else log `Cross-model gate skipped: tier=low default` and continue.
+`codex: off`. If user explicit pass `--codex`, run pass anyway (user override) with `--model terra` (`gpt-5.6-terra`; pass `--codex-model=luna` for the explicit cheap override). Else log `Cross-model gate skipped: tier=low default` and continue.
 
 ## Phase 6: Verdict & Output
 

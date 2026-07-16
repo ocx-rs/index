@@ -13,7 +13,7 @@ Rules for efficient multi-agent swarm execution.
 1. **Workers inherit session context** - CLAUDE.md and rules loaded, workers use focused tool sets
 2. **Narrow scope** - Each worker one task
 3. **Minimal tools** - Only tools needed
-4. **Right-sized models** - Haiku exploration, Sonnet implementation, Opus architecture
+4. **Right-sized models** - Sonnet is the default floor for all subagent work; Opus for multi-subsystem/one-way-door decisions (may fan back out to Sonnet); Haiku only via explicit user override, never automatic
 
 ## Universal Worker Protocol (Critical Steps for Every Build/Test/Review Worker)
 
@@ -29,7 +29,7 @@ Rules for efficient multi-agent swarm execution.
 | Worker | Model | Tools | Use |
 |--------|-------|-------|-----|
 | `worker-architecture-explorer` | sonnet | Read, Glob, Grep | Architecture discovery |
-| `worker-explorer` | haiku | Read, Glob, Grep | Fast codebase search |
+| `worker-explorer` | sonnet | Read, Glob, Grep | Fast codebase search |
 | `worker-builder` | sonnet (opus override for complex implementation) | Read, Write, Edit, Bash, Glob, Grep | Stubbing/implementation/refactoring (see model rationale below) |
 | `worker-tester` | sonnet | Read, Write, Edit, Bash, Glob, Grep | Specification tests and validation |
 | `worker-reviewer` | sonnet (default) | Read, Glob, Grep, Bash | Code review/security/spec-compliance (diff-scoped; model scales per tier via `--reviewer` overlay — see `.claude/artifacts/adr_tier_model_correlation.md`) |
@@ -48,7 +48,7 @@ Orchestrators specialize workers via focus mode in prompt.
 - `testing`: Write tests, cover happy path + edge cases, ensure deterministic. Sonnet default.
 - `refactoring`: Extract patterns, simplify conditionals, apply SOLID/DRY. Follow Two Hats Rule (see quality-core.md). Sonnet default.
 
-**Model selection rationale:** Opus 4.7 leads Sonnet 4.6 by 8.0pp on SWE-bench Verified at 1.67× input cost, lower throughput. Gap shows on multi-step agentic chains and novel-reasoning; narrows to near-parity on single-pass review. OCX policy: Opus for one-way-door architecture and max-tier complex implementation; Sonnet for standard review / testing / implementation; Haiku only for read-only exploration and narrow single-pass tasks. Per-tier overrides in `.claude/artifacts/adr_tier_model_correlation.md` and per-skill `overlays.md` files. Source benchmark data: `.claude/artifacts/research_model_capability_matrix.md`.
+**Model selection rationale:** Sonnet 5 is the default floor for all subagent work — implementation, research, review, docs, tests, exploration. Opus is reserved for genuinely hard, multi-subsystem or one-way-door problems where Sonnet demonstrably falls short, and may fan back out to Sonnet workers once scoped. Haiku is never an automatic routing target — it runs only via explicit user override, and never on security-relevant paths. Per-tier overrides in `.claude/artifacts/adr_tier_model_correlation.md` and per-skill `overlays.md` files. Source benchmark data: `.claude/artifacts/research_model_capability_matrix.md`. (owner policy 2026-07-16)
 
 **worker-tester focus modes:**
 - `specification`: Write tests from design record BEFORE implementation. Tests encode expected behavior as executable spec. Must fail against stubs.
@@ -87,7 +87,7 @@ Classify each finding:
 
 **Subsequent rounds** — re-run only perspectives with actionable findings prior round. Loop exits when no actionable findings remain or tier's round cap hit. Oscillating findings (same issue surfaced two rounds) auto-defer.
 
-**Cross-model adversarial pass** (optional, tier-scaled): after Claude loop converges, run single Codex adversarial review against diff as final gate. One-shot, no looping — two-family stylistic thrash = failure mode. Codex model scales with tier (`low→luna`, `high→terra`, `max→sol`) — see "Cross-model model tiers" in `workflow-swarm.md`. Skipped gracefully if Codex unavailable.
+**Cross-model adversarial pass** (optional, tier-scaled): after Claude loop converges, run single Codex adversarial review against diff as final gate. One-shot, no looping — two-family stylistic thrash = failure mode. Codex model scales with tier (`low→terra` when forced, `high→terra` default-on, `max→sol`; `luna` only via explicit `--codex-model=luna` override) — see "Cross-model model tiers" in `workflow-swarm.md`. Skipped gracefully if Codex unavailable.
 
 **Gate to exit**: no actionable findings remain, verification passes on final state, deferred findings documented for handoff.
 <!-- REVIEW_FIX_LOOP_CANONICAL_END -->
@@ -102,7 +102,7 @@ All three swarm skills (`/swarm-plan`, `/swarm-execute`, `/swarm-review`) take o
 |---|---|---|
 | `low` | Two-Way Door: flag/option change, doc edit, single subsystem ≤3 files | 1 explorer, research skipped, inline design, 1 reviewer single pass, Codex off |
 | `auto` (default) | Classifier picks low/high/max from signals | — |
-| `high` | One-Way Door Medium: new subcommand, new index/storage layout, 1–2 subsystems | `worker-architecture-explorer` + 2–4 explorers, 1 researcher, inline/sonnet architect, parallel Claude review panel (2 rounds), Codex off (auto-on for One-Way Door signals) |
+| `high` | One-Way Door Medium: new subcommand, new index/storage layout, 1–2 subsystems | `worker-architecture-explorer` + 2–4 explorers, 1 researcher, inline/sonnet architect, parallel Claude review panel (2 rounds), Codex default-ON (`terra` one-shot) |
 | `max` | One-Way Door High: new crate, breaking API, cross-subsystem, protocol change | Same as high + mandatory opus architect, mandatory 3-axis research, mandatory Codex plan-artifact review as final gate |
 
 ### /swarm-execute tiers
@@ -113,7 +113,7 @@ Execute reads classification from plan artifact header when present (primary sig
 |---|---|---|
 | `low` | Two-Way Door from plan=low: 1-round loop, minimal Stage 2 (quality only), no arch verify, no Codex | sonnet stub+impl, tester (unit only), 1 reviewer Stage 1 + 1 reviewer Stage 2 |
 | `auto` (default) | Classifier reads plan header `Tier:` verbatim; falls back to free-text signals | — |
-| `high` | Medium plan: 3-round loop, full Stage 2 (quality / security / perf / docs), Codex off (auto-on for One-Way Door plan signals) | sonnet stub+impl (opus override for cross-subsystem), arch-verify reviewer, unit + acceptance tests |
+| `high` | Medium plan: 3-round loop, full Stage 2 (quality / security / perf / docs), Codex default-ON (`terra` one-shot) | sonnet stub+impl (opus override for cross-subsystem), arch-verify reviewer, unit + acceptance tests |
 | `max` | Large plan: 3-round loop, adversarial Stage 2 (+ architect + SOTA + cli-ux), mandatory Codex code-diff gate | opus stub+impl (mandatory), reviewer + architect arch-verify, edge-case test coverage |
 
 ### /swarm-review tiers
@@ -124,7 +124,7 @@ Review classifies from **diff against configured baseline** (`--base=<ref>`, def
 |---|---|---|
 | `low` | ≤3 files, ≤100 lines, 1 subsystem, no structural markers | 1 reviewer (spec-compliance + quality), no RCA, no Codex |
 | `auto` (default) | Classifier reads diff metrics + paths + PR labels | — |
-| `high` | ≤15 files, ≤500 lines, 1–2 subsystems, no One-Way Door High signals | Stage 1 (spec-compliance + test-coverage) + Stage 2 full (quality / security / perf / docs), RCA for Block/High, Codex off (auto-on for One-Way Door signals) |
+| `high` | ≤15 files, ≤500 lines, 1–2 subsystems, no One-Way Door High signals | Stage 1 (spec-compliance + test-coverage) + Stage 2 full (quality / security / perf / docs), RCA for Block/High, Codex default-ON (`terra` one-shot) |
 | `max` | >15 files, or cross-subsystem, or new crate, or breaking/protocol/security signals | Adversarial breadth (+ architect + SOTA + CLI-UX), RCA for all >Suggest, mandatory Codex code-diff gate |
 
 ### Overlays (stackable, single-axis adjustments on top of chosen tier)
@@ -171,20 +171,23 @@ Extends cross-model adversarial pass up lifecycle. Same entry point (`/codex-adv
 
 Both one-shot (no looping — prevents two-family stylistic thrash). Gating by tier:
 
-- `low`: skipped (Two-Way Door — cost > value)
-- `high`: off by default; auto-on when classifier detects One-Way Door signals (public API change, breaking change, novel algorithm); explicit via `--codex`
-- `max`: mandatory final gate
+- `low`: skipped by default (Two-Way Door — cost > value); opt-in via `--codex` (fires as `terra`; `--codex-model=luna` for explicit cheap override)
+- `high`: **default-ON** one-shot `terra` pass (no longer gated behind One-Way Door signal detection); explicit off via `--no-codex`
+- `max`: mandatory final gate (`sol`)
 
 ### Cross-model model tiers
 
-When the pass fires, the Codex model scales with tier — heavier review
-earns a stronger reviewer (mirrors the Claude `--reviewer` haiku→sonnet→
-opus ladder). `/codex-adversary` resolves these aliases to slugs (see its
-"Model selection"); the GPT-5.6 tiers map onto the Claude analogues:
+When the pass fires, the Codex model scales with tier — `terra` is the
+cost-efficient default and fires in smaller (low-tier, when forced) review
+loops too, not just high; `sol` is the mandatory max-tier gate. `luna` is
+never an automatic default — it runs only via explicit `--codex-model=luna`
+override, mirroring the Claude Sonnet-floor policy where Haiku requires the
+same explicit override. `/codex-adversary` resolves these aliases to slugs
+(see its "Model selection"); the GPT-5.6 tiers map onto the Claude analogues:
 
 | Tier | Codex model | Slug | Claude analogue |
 |---|---|---|---|
-| `low` (only when `--codex` forced) | `luna` | `gpt-5.6-luna` | Haiku |
+| `low` (only when `--codex` forced) | `terra` (`luna` = explicit cheap override) | `gpt-5.6-terra` | Sonnet |
 | `high` | `terra` | `gpt-5.6-terra` | Sonnet |
 | `max` | `sol` | `gpt-5.6-sol` | Opus |
 

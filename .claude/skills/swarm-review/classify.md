@@ -96,19 +96,19 @@ multiple triggers may fire. Axis defs live in `overlays.md`.
 |---|---|
 | `--breadth=full` | tier=high (default); `.github/workflows/**` or JSON schema paths touched at tier=low (escalation) |
 | `--breadth=adversarial` | tier=max (default); announce/reconcile auth or payload-validation logic touched at tier=high; `security` label; `--rca=on` together with ≥2 subsystems |
-| `--reviewer=haiku` | tier=low AND NO structural markers from "Structural marker signals" table present in diff |
 | `--reviewer=opus` | tier=max AND `--breadth=adversarial` |
-| `--doc-reviewer=haiku` | Diff touches ≤2 doc files (`README.md` or `public/index.html`) |
 | `--rca=on` | tier=high+ (default) — scope differs per tier (see overlays.md) |
 | `--codex` | One-Way Door structural marker; `breaking-change` or `security` label; public API change; new crate; protocol change |
+
+`--reviewer=haiku` / `--doc-reviewer=haiku` have no automatic trigger — Sonnet 5 is the floor for both axes at every tier; Haiku runs only via explicit user override, and never on security-relevant paths.
 
 Defaults per tier (before overlays apply):
 
 | Axis | low | high | max |
 |---|---|---|---|
 | breadth | minimal | full | adversarial |
-| reviewer | haiku (→ sonnet on structural markers) | sonnet | sonnet (→ opus on adversarial breadth) |
-| doc-reviewer | sonnet | sonnet (→ haiku on narrow doc scope) | sonnet (→ haiku on narrow doc scope) |
+| reviewer | sonnet | sonnet | sonnet (→ opus on adversarial breadth) |
+| doc-reviewer | sonnet | sonnet | sonnet |
 | rca | off | on (Block/High) | on (>Suggest) |
 | codex | off | off (auto-on for One-Way Door signals) | on (mandatory) |
 

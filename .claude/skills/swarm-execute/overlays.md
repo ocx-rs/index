@@ -60,34 +60,36 @@ See `.claude/artifacts/adr_tier_model_correlation.md` for rationale.
 
 Controls model for every `worker-reviewer` launch across Verify-Arch (post-stub), Review-Fix Loop Stage 1 (spec-compliance + test-coverage), Stage 2 (quality / security / performance). All reviewer invocations in single `/swarm-execute` run share resolved value.
 
-Evidence from `.claude/artifacts/research_model_capability_matrix.md`: Opus 4.7 leads Sonnet 4.6 by 8.0pp on SWE-bench Verified; gap largest on multi-step agentic chains (adversarial breadth profile at tier=max). Qodo 400-PR study puts Haiku 4.5 ahead of Sonnet 4.5 on single-pass code review for narrow-scope diffs.
+Evidence from `.claude/artifacts/research_model_capability_matrix.md`: Opus 4.7 leads Sonnet 4.6 by 8.0pp on SWE-bench Verified; gap largest on multi-step agentic chains (adversarial breadth profile at tier=max).
 
 | Value | Effect |
 |---|---|
-| `haiku` | `worker-reviewer` with model=haiku. Narrow-scope review at tier=low with no security/structural markers. |
-| `sonnet` | `worker-reviewer` with model=sonnet. Default at tier=high and tier=max (non-adversarial). |
+| `haiku` | `worker-reviewer` with model=haiku. Explicit user override only — never triggered automatically, never on security-relevant paths. |
+| `sonnet` | `worker-reviewer` with model=sonnet. Default floor at every tier. |
 | `opus` | `worker-reviewer` with model=opus. Used at tier=max when `--breadth=adversarial` fires — CLI-UX, architecture-boundary, SOTA-gap perspectives benefit from deeper reasoning. |
 
 Per-tier defaults:
-- low → `haiku` (→ `sonnet` when structural markers from `swarm-review/classify.md` "Structural marker signals" fire: `.github/workflows/**`, JSON schemas, `public/config.json` / `p/**` wire-contract surfaces, announce/reconcile auth or payload-validation logic)
+- low → `sonnet`
 - high → `sonnet`
 - max → `sonnet` (→ `opus` when `--breadth=adversarial`)
 
-**Security floor**: Haiku never runs reviewer on structural-marker paths. Floor = Sonnet minimum whenever any marker from `swarm-review/classify.md` "Structural marker signals" present in diff.
+Sonnet is the floor; haiku only via explicit user override and never on security-relevant paths.
 
 ### doc-reviewer axis
 
-Controls model for `worker-doc-reviewer` when launches (Stage 2 at tier=high/max). Single-pass narrow-scope doc audit = workload where Haiku 4.5 beats Sonnet 4.5 per Qodo 400-PR study (see `.claude/artifacts/research_model_capability_matrix.md`). Fenced to narrow doc diffs to avoid Haiku 200k context cap binding on full user-guide audits.
+Controls model for `worker-doc-reviewer` when launches (Stage 2 at tier=high/max).
 
 | Value | Effect |
 |---|---|
-| `haiku` | `worker-doc-reviewer` with model=haiku. Triggered when the diff touches ≤2 doc files (`README.md`, `public/index.html`). |
-| `sonnet` | `worker-doc-reviewer` with model=sonnet. Default at all tiers; used whenever the haiku trigger does not fire. |
+| `haiku` | `worker-doc-reviewer` with model=haiku. Explicit user override only — never triggered automatically. |
+| `sonnet` | `worker-doc-reviewer` with model=sonnet. Default at all tiers. |
 
-Per-tier defaults (all tiers share same default — axis only toggles when scope trigger fires):
+Per-tier defaults:
 - low → `sonnet` (moot: doc-reviewer does not launch at tier=low)
-- high → `sonnet` (→ `haiku` when narrow-scope doc trigger fires)
-- max → `sonnet` (→ `haiku` when narrow-scope doc trigger fires)
+- high → `sonnet`
+- max → `sonnet`
+
+Sonnet is the floor; haiku only via explicit user override and never on security-relevant paths.
 
 ### loop-rounds axis
 
@@ -136,7 +138,7 @@ Per-tier defaults:
 - high → `off` by default; auto-on when `classify.md` fires the `--codex` overlay for One-Way Door signals from the plan header
 - max → `on` (mandatory, final gate before commit)
 
-**Codex model per tier** (passed to `codex-adversary` as `--model`): high → `terra` (`gpt-5.6-terra`), max → `sol` (`gpt-5.6-sol`); `luna` (`gpt-5.6-luna`) if `--codex` forced at low. Override with `--codex-model=luna|terra|sol`. Policy: `workflow-swarm.md` "Cross-model model tiers".
+**Codex model per tier** (passed to `codex-adversary` as `--model`): low (when `--codex` forced) → `terra` (`gpt-5.6-terra`; `luna`/`gpt-5.6-luna` only via explicit `--codex-model=luna` override), high → `terra` (`gpt-5.6-terra`), max → `sol` (`gpt-5.6-sol`). Override with `--codex-model=luna|terra|sol`. Policy: `workflow-swarm.md` "Cross-model model tiers".
 
 Triage mirrors existing cross-model pass triage in `codex-adversary`:
 

@@ -8,7 +8,7 @@ Load file via `Read` from `SKILL.md` after config announced.
 
 Launch **in single message with multiple Agent tool calls** so run concurrent:
 - **1** `worker-architecture-explorer` (sonnet) — map current architecture, trace dependencies, find reusable code + patterns
-- **2–4** `worker-explorer` agents (haiku) — each scoped to relevant repo surface (`public/`, `p/`, schemas, `.github/workflows/`, `scripts/`)
+- **2–4** `worker-explorer` agents (sonnet) — each scoped to relevant repo surface (`public/`, `p/`, schemas, `.github/workflows/`, `scripts/`)
 
 **In parallel, read direct:**
 - `.claude/rules/product-context.md` — product positioning + vision
@@ -21,7 +21,7 @@ GitHub discovery: when target resolve to PR/issue, use fetched context in place 
 
 ## Phase 2: Research (parallel, 1 axis)
 
-Launch **1** `worker-researcher` (model per resolved `--researcher` overlay: `sonnet` default; `haiku` when narrow-scope trigger fires — see `overlays.md` researcher axis) on single most relevant axis — pick from tech / patterns / domain. Pair with at least one explorer output so external findings grounded in local code.
+Launch **1** `worker-researcher` (model per resolved `--researcher` overlay: `sonnet` default; `haiku` only via explicit user override — see `overlays.md` researcher axis) on single most relevant axis — pick from tech / patterns / domain. Pair with at least one explorer output so external findings grounded in local code.
 
 Findings >1 paragraph MUST persist as `.claude/artifacts/research_[topic].md` for reuse.
 

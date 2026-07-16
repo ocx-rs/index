@@ -72,13 +72,13 @@ multiple triggers may fire. Axis defs in `overlays.md`.
 |---|---|
 | `--builder=opus` | Plan "Subsystems Touched" lists ≥2; plan or prompt mentions "novel algorithm", "new trait hierarchy", "cross-subsystem", "protocol change" |
 | `--tester=opus` | tier=max (mandatory — reflects the exhaustive edge-case coverage work documented in `tier-max.md` Phase 4) |
-| `--reviewer=haiku` | tier=low AND NO structural markers from `swarm-review/classify.md` "Structural marker signals" present in the diff |
 | `--reviewer=opus` | tier=max AND `--breadth=adversarial` |
-| `--doc-reviewer=haiku` | Diff touches ≤2 doc files (`README.md` or `public/index.html`) |
 | `--loop-rounds=1` | tier=low; or plan tags the feature as Two-Way Door |
 | `--loop-rounds=3` | tier=high or tier=max (default) |
 | `--review=adversarial` | Security-sensitive paths (`.github/workflows/`, auth, secrets, PAT handling); plan labels `security`; diff touches announce/reconcile payload-validation logic |
 | `--codex` | Plan header `Reversibility: One-Way Door` (Medium or High); breaking-change signals in plan or prompt; `Overlays: codex=on` |
+
+`--reviewer=haiku` / `--doc-reviewer=haiku` have no automatic trigger — Sonnet 5 is the floor for both axes at every tier; Haiku runs only via explicit user override, and never on security-relevant paths.
 
 Defaults per tier (before overlays):
 
@@ -86,8 +86,8 @@ Defaults per tier (before overlays):
 |---|---|---|---|
 | builder | sonnet | sonnet | opus |
 | tester | sonnet | sonnet | opus |
-| reviewer | haiku (→ sonnet on structural markers) | sonnet | sonnet (→ opus on adversarial breadth) |
-| doc-reviewer | sonnet | sonnet (→ haiku on narrow doc scope) | sonnet (→ haiku on narrow doc scope) |
+| reviewer | sonnet | sonnet | sonnet (→ opus on adversarial breadth) |
+| doc-reviewer | sonnet | sonnet | sonnet |
 | loop-rounds | 1 | 3 | 3 |
 | review | minimal | full | adversarial |
 | codex | off | off (auto-on for One-Way Door) | on (mandatory) |
