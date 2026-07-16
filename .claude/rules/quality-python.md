@@ -83,6 +83,36 @@ Project-independent, shareable.
 
 ---
 
+## CI Bots / Security-Critical Automation
+
+Scope: automation holding credentials (PAT, `GITHUB_TOKEN`) and processing untrusted
+input (e.g. `repository_dispatch` payloads). Derived: `research_python_bot_stack.md`,
+`research_python_coverage_gate.md`, `research_python_bot_security.md`.
+
+- **Functional core / imperative shell** — pure functions compute (regenerate, diff,
+  validate); I/O behind `Protocol`-typed ports (`RegistryPort`, `GitHubPort`). This is
+  what makes 100% branch coverage reachable with fakes instead of mock hell.
+- **Ship as a real uv package** (src layout, `pyproject.toml`, `tests/`) — never loose
+  scripts. PEP 723 single-file scripts only for one-off throwaway tooling without tests.
+- **100% coverage gate**: `[tool.coverage.run] branch = true`;
+  `[tool.coverage.report] fail_under = 100`, `show_missing = true`. No inline
+  `# pragma: no cover` — only a small reviewed `exclude_also` list (main-guard,
+  `TYPE_CHECKING`, abstract stubs). `task verify` and CI run the identical command.
+- **Untrusted input (Block-tier)**: length-cap BEFORE regex; `re.fullmatch` only (never
+  `match`/`search`); no nested quantifiers (ReDoS — `re` has no timeout); reject `..`
+  and absolute paths; validated values pass via env-var indirection, never interpolation.
+- **ruff `S` group is opt-in — enable it** + bandit in CI. Key codes: S113 (HTTP call
+  without timeout), S310 (URL scheme check), S603/S607 (subprocess).
+- **Exit-code contract**: distinct codes for no-op success / validation failure /
+  transient-retryable / anomaly — callers never parse log text.
+- **Idempotency is a test case**: "run twice, second diff empty" is required coverage.
+- **Minimal deps**: stdlib-first; each dep = audit surface for the credential-holding
+  process. HTTP client justified; typed GitHub SDK for a handful of REST calls is not.
+- **HTTP test doubles**: respx/responses-style route mocks — synthesize 401/retry/
+  malformed-JSON edges; never vcrpy cassettes (PAT-leak risk, can't synthesize edges).
+
+---
+
 ## Code Review Checklist (Python-Specific)
 
 See `quality-core.md` for universal review checklist. Python-specific additions:
