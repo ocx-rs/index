@@ -2,6 +2,21 @@
 
 Guide Claude Code in this repo.
 
+## ⛔ MODEL POLICY — NON-NEGOTIABLE
+
+Applies to EVERY subagent spawn (Agent tool, Workflow `agent()`, swarm skills).
+Always set `model` explicitly — never rely on inherit (a Fable main loop would
+silently spawn Fable workers).
+
+| Task | Model |
+|---|---|
+| Implementation, research, review, docs, tests, exploration — **the default** | **Sonnet 5** (`sonnet`) |
+| Genuinely hard problems where Sonnet demonstrably falls short | Opus (`opus`) — rare, justify in the spawn prompt |
+| Synthesizing multiple agent results into architecture conclusions | Fable — main loop only, (near-)NEVER as a subagent |
+
+**Never** spawn Fable subagents for review, research, or implementation.
+Parallelize Sonnet workers aggressively instead of escalating model tier.
+
 ## What This Repo Is
 
 Source of truth for the **OCX public package index** at `https://index.ocx.sh` —
