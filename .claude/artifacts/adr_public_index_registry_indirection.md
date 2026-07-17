@@ -111,6 +111,16 @@ we defer this to a separate **signing/provenance ADR** (see Deferred).
 
 ### D4 — Announce protocol: doorbell, not data
 
+**Superseded by:** [`adr_fork_pr_announce.md`](./adr_fork_pr_announce.md) (ADR-6,
+2026-07-18) — the transport ladder's `repository_dispatch` rung (v1) is retired: it
+requires a per-publisher PAT on `ocx-sh/index` that a third party cannot mint, so it
+cannot scale. Announce is now an ordinary **fork PR** carrying the claimed root + CAS
+objects (ADR-6 FP-1). The "payloads cannot lie / regenerate from registry truth"
+principle is **kept** — CI re-derives every claimed tag from the registry and
+byte-compares. The "publisher never enumerates" bullet no longer holds: under
+owner-curated tags the publisher *does* choose the tag set (ADR-6 FP-2), and drift is
+now flagged verify-only, not self-healed by a rewrite (ADR-6 FP-3).
+
 Publisher signals only "refresh package X". An index bot regenerates the entry from
 **registry truth** (`tags/list` + manifests) and commits one file change.
 
@@ -125,6 +135,15 @@ Publisher signals only "refresh package X". An index bot regenerates the entry f
   v2 = `ocx package push --announce` sugar over the same dispatch. CLI stays thin.
 
 ### D5 — Bot merge policy
+
+**Reinterpreted by:** [`adr_fork_pr_announce.md`](./adr_fork_pr_announce.md) (ADR-6,
+2026-07-18) — the two-tier split below (new package = human; green refresh = auto-merge;
+trust/lifecycle change = human) is **kept**, but on the fork-PR transport (D4, above)
+the auto-merge tier gains an explicit authorization gate: the PR author's
+`github_id` must be in the committed root's `owners[]` (ADR-6 FP-5, **G-19**), and
+owner-authored tag add/remove joins the auto-merge tier (owner curation, ADR-6 FP-2).
+Non-owner and human-lane PRs get reviewers assigned from a committed `maintainers.yml`
+(ADR-6 FP-6, **G-20**).
 
 | Event | Action | Precedent |
 |---|---|---|
@@ -453,3 +472,4 @@ Owner decision after the ocx.rs infra went live: **stay with `ocx.sh` for now, p
 | 2026-07-11 | Michael + Claude | Initial record from design discussion (2026-07-10/11) |
 | 2026-07-12 | Michael + Claude | Amendment A1: D14 reversed — canonical stays ocx.sh, ocx.rs parked fully |
 | 2026-07-17 | Michael + Claude | Deferred `all.json`/search-snapshot bullet partially resolved: name+digest enumeration now covered by `adr_enumeration_index.md`'s `/c/index.json`; full-text search remains deferred |
+| 2026-07-18 | Michael + Claude | D4 superseded and D5 reinterpreted by `adr_fork_pr_announce.md` (ADR-6): announce transport moves from `repository_dispatch` doorbell to fork PR (no index-side PAT); merge policy keeps its two tiers but gates auto-merge on `owners[]` membership (G-19) and assigns human-lane reviewers from `maintainers.yml` (G-20). Marked inline under D4/D5. |

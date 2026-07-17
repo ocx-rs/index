@@ -248,6 +248,14 @@ Required test-suite shapes (each maps to a Phase 2 work package):
 
 ### BD-4 — Untrusted input handling: length-cap, `fullmatch`, env-var indirection, two-regex separation
 
+> **Amended by [ADR-6](./adr_fork_pr_announce.md) Amendment A1 (2026-07-18):** the `repository_dispatch`
+> `client_payload` *mechanism* below is retired with the doorbell (there is no
+> dispatch payload under the fork-PR lane). The untrusted-input *hygiene* — length-cap,
+> `re.fullmatch`, `..`/absolute-path rejection, env-var indirection over `run:`
+> interpolation — carries forward verbatim to fork-PR claim verification. See
+> Amendment A1 for the retired module (`core/validate_payload.py`) and the migrated
+> discipline.
+
 Any `repository_dispatch` `client_payload` field is:
 
 1. **Length-capped before regex evaluation** — reject on length first, so worst-case
@@ -292,6 +300,13 @@ separate:
 
 ### BD-5 — Privileged/unprivileged workflow split and the governance gate
 
+> **Reaffirmed and extended by [ADR-6](./adr_fork_pr_announce.md) Amendment A1 (2026-07-18):** the split below is
+> **load-bearing and unchanged** — it is exactly the defense the fork-PR lane needs. The
+> `schema-validate` job additionally runs unprivileged claim verification (re-derive +
+> byte-compare on PR head, still zero secrets); the governance-gate job additionally
+> enforces owners-membership (G-19) and assigns reviewers from `maintainers.yml` (G-20),
+> still never checking out PR head. See Amendment A1.
+
 `validate.yml` is two jobs with deliberately different trust levels:
 
 | Job | Trigger | Secrets | Checks out | Network | Required status check |
@@ -327,6 +342,12 @@ fallback is plain required-review (drop the custom status check, require a human
 approval on every PR) — a strictly less automated but unambiguously correct posture.
 
 ### BD-6 — Secrets and GitHub Environments
+
+> **Amended by [ADR-6](./adr_fork_pr_announce.md) Amendment A1 (2026-07-18):** the **Announce PAT (G-17) row is
+> retired** — the fork-PR lane holds no publisher-side index credential at all. The
+> `index-write` Environment's role shrinks (verify-only reconcile no longer writes;
+> announce PRs originate from the publisher's own fork, not an index-side token). The
+> default `GITHUB_TOKEN` row stands. See Amendment A1 and ADR-6 FP-7.
 
 | Credential | Scope | Held by | Bound to |
 |---|---|---|---|
@@ -409,17 +430,17 @@ regenerate. One row per contract, disposition under the current model:
 | G-05 | Green refresh → auto-merge eligible; yank/deprecate/transfer/`owners`/pointer change → human review always | **Kept, key set expanded** | Under the tags-map model, "refresh" means new/updated rows matching live registry truth. The human-review-required key set is `repository`, `owners`, `status`, `deprecated_message`, and any mutation of an *existing* tag row's `yanked` field. |
 | G-06 | Render: `p/*.json` → `public/p/*.json` identity copy + `config.json` | **Reinterpreted** | No longer an identity copy. `indexbot render` (`core/render.py`) does reachability-filtered CAS copy, new-shape `config.json` emission, `/data/catalog/**` emission, and per-package wrapper-page emission — see `adr_catalog_docs_colocation.md`. Owned by the `indexbot render` subcommand, not a standalone script. |
 | G-07 | Deploy idempotent; no-op on an unchanged tree | **Kept** | |
-| G-08 | `repository_dispatch` + `client_payload.package`, env-var indirection, regex-validated before use | **Kept, regex reinterpreted** | Package-id regex is now the exact 2-segment form (ADR-2 ND-3), replacing the earlier N-segment-permissive draft in `design_spec_registry_indirection.md` §10 amendment 5. Mechanics: BD-4. |
-| G-09 | Field provenance partition: registry-derived vs human-governed fields never cross-contaminate | **Kept, field set updated** | Registry-derived (regenerated every announce/reconcile): the entire `tags` map + observation objects. Human-governed (never regenerated, only human-PR-changed): `name`, `repository`, `owners`, `status`, `deprecated_message`, `created`, `upstream`. `desc` is registry-derived (sourced from the `__ocx.desc` artifact / `sh.ocx.keywords` annotation) but only refreshed at announce/reconcile time from the currently-tagged content, per `adr_locked_observation_index_format.md`. |
+| G-08 | `repository_dispatch` + `client_payload.package`, env-var indirection, regex-validated before use | **Kept, regex reinterpreted** | Package-id regex is now the exact 2-segment form (ADR-2 ND-3), replacing the earlier N-segment-permissive draft in `design_spec_registry_indirection.md` §10 amendment 5. Mechanics: BD-4. **— Retired 2026-07-18 → [ADR-6](./adr_fork_pr_announce.md) Amendment A1:** no `repository_dispatch`/`client_payload` exists under the fork-PR lane; the input hygiene migrates to fork-PR claim verification. |
+| G-09 | Field provenance partition: registry-derived vs human-governed fields never cross-contaminate | **Kept, field set updated** | Registry-derived (regenerated every announce/reconcile): the entire `tags` map + observation objects. Human-governed (never regenerated, only human-PR-changed): `name`, `repository`, `owners`, `status`, `deprecated_message`, `created`, `upstream`. `desc` is registry-derived (sourced from the `__ocx.desc` artifact / `sh.ocx.keywords` annotation) but only refreshed at announce/reconcile time from the currently-tagged content, per `adr_locked_observation_index_format.md`. **— Reinterpreted 2026-07-18 → [ADR-6](./adr_fork_pr_announce.md) Amendment A1:** the `tags` map is owner-curated (announced), not regenerated from every observed tag; each row's *content* is still derived/verified from registry truth, but the set's scope is the owner's curated selection (ADR-6 FP-2). |
 | G-10 | Bounded backoff retry on manifest fetch before giving up | **Kept** | `core/backoff.py`; exhaustion maps to exit `75` (BD-2). |
-| G-11 | Idempotent + cascade-safe convergence; diff routes to G-04/G-05 merge policy | **Kept** | Idempotency is now an explicit required test ("run twice, second diff empty", BD-3), not an implicit property. |
-| G-12 | Nightly reconcile regenerates every entry, diffs, opens one PR with all drift | **Kept** | |
+| G-11 | Idempotent + cascade-safe convergence; diff routes to G-04/G-05 merge policy | **Kept** | Idempotency is now an explicit required test ("run twice, second diff empty", BD-3), not an implicit property. **— Partially superseded 2026-07-18 → [ADR-6](./adr_fork_pr_announce.md) Amendment A1:** the "publisher never enumerates" property no longer holds — under owner-curated tags the owner chooses the tag set (ADR-6 FP-2). Idempotency/cascade-safety within the curated scope is kept. |
+| G-12 | Nightly reconcile regenerates every entry, diffs, opens one PR with all drift | **Kept** | **— Reframed verify-only 2026-07-18 → [ADR-6](./adr_fork_pr_announce.md) Amendment A1:** reconcile no longer regenerates, rewrites, or opens a content PR; it verifies every committed claim against the registry and flags anomalies via issue (ADR-6 FP-3). |
 | G-13 | Reconcile-maintained `state/observed-digests.json`; digest change on an already-observed tag = hard-stop anomaly, first sight recorded not flagged | **Eliminated as a separate file** | The committed root **is** the observation ledger under the locked-observation model — every observed tag and its content digest already lives in the `tags` map. The anomaly check reads the committed root directly instead of an auxiliary state file. The exact mutability predicate (which tag classes may legitimately move vs. which digest changes are integrity violations) is `adr_locked_observation_index_format.md`'s contract; this ADR fixes that violations exit `65` and are never auto-healed (BD-2). |
 | G-14 | Sibling-repo CI hardening explicit: `permissions:` default-deny + SHA-pinned actions on all workflows | **Kept** | BD-7. |
 | G-15 | D6 ownership proof executed: fetch the physical manifest, verify the embedded canonical identifier equals the entry's logical `name` | **Reinterpreted as a pluggable loud-skip seam** | The identifier-embedding convention this depends on is unconfirmed against `ocx-mirror`'s actual publishing behavior. Implemented as a `RegistryPort` probe returning one of three outcomes — `confirmed`, `mismatch` (block-tier), `unconfirmed` (WARN + surfaced on the PR, **never a silent pass**). Resolving the convention is tracked against `ocx-mirror` publishing verification, not this ADR. |
 | G-16 | Privileged/unprivileged workflow split | **Kept** | BD-5, in full. |
-| G-17 | Announce abuse bounds: namespace-scoped PAT, per-package concurrency groups, schema-validated payload | **Kept** | BD-4 (payload), BD-6 (PAT scoping). `announce.yml` uses `concurrency: announce-<ns>-<pkg>`, `cancel-in-progress: true`. |
-| G-18 | Reconcile disabled/dry-run until the 42-package republish batch is parity-verified (M-1) | **Reinterpreted** | Mechanism changed from workflow-disable to a repo [Actions variable](https://docs.github.com/en/actions/learn-github-actions/variables) `RECONCILE_DRY_RUN`, read by `reconcile.yml` and passed to `indexbot reconcile --dry-run`. Same intent (no mutation before parity verification); flip is `gh variable set RECONCILE_DRY_RUN false`, documented as an ops page (`WP2-Q`), not a workflow-file edit. |
+| G-17 | Announce abuse bounds: namespace-scoped PAT, per-package concurrency groups, schema-validated payload | **Kept** | BD-4 (payload), BD-6 (PAT scoping). `announce.yml` uses `concurrency: announce-<ns>-<pkg>`, `cancel-in-progress: true`. **— Retired 2026-07-18 → [ADR-6](./adr_fork_pr_announce.md) Amendment A1:** no namespace-scoped PAT exists; announce abuse bounds become the fork-PR spam posture — label failed-check PRs + stale-close (ADR-6 FP-8). |
+| G-18 | Reconcile disabled/dry-run until the 42-package republish batch is parity-verified (M-1) | **Reinterpreted** | Mechanism changed from workflow-disable to a repo [Actions variable](https://docs.github.com/en/actions/learn-github-actions/variables) `RECONCILE_DRY_RUN`, read by `reconcile.yml` and passed to `indexbot reconcile --dry-run`. Same intent (no mutation before parity verification); flip is `gh variable set RECONCILE_DRY_RUN false`, documented as an ops page (`WP2-Q`), not a workflow-file edit. **— Collapses into always-dry 2026-07-18 → [ADR-6](./adr_fork_pr_announce.md) Amendment A1:** verify-only reconcile has no mutating mode to gate, so `RECONCILE_DRY_RUN` is retired (ADR-6 FP-3). |
 
 ## Technical Details
 
@@ -519,6 +540,74 @@ reconcile.yml (nightly cron + workflow_dispatch)
 - `research_python_bot_stack.md`, `research_python_bot_security.md`,
   `research_python_coverage_gate.md`, `research_validate_render_pipeline.md` — source
   research
+- [`adr_fork_pr_announce.md`](./adr_fork_pr_announce.md) — ADR-6, the fork-PR announce
+  lane that amends BD-4/BD-5/BD-6 and the G-table below (Amendment A1)
+
+---
+
+## Amendment A1 — Fork-PR announce lane (2026-07-18)
+
+[`adr_fork_pr_announce.md`](./adr_fork_pr_announce.md) (ADR-6) replaces the
+`repository_dispatch` announce doorbell with an ordinary **fork pull request**: no
+publisher holds a credential on `ocx-sh/index`; the PR carries the claimed root + CAS
+objects; unprivileged CI re-derives every claimed tag from registry truth and
+byte-compares; `owners[].github_id` membership decides auto-merge vs. human review.
+This amendment records the effect on this ADR's decisions and governance table. Per
+immutable-ADR discipline the original text above is unchanged — the markers on BD-4/5/6
+and on the G-table rows point here; this section carries the current disposition.
+
+**Blanket provenance note.** Wherever the decisions and carry-forward table above say
+"every observed tag" or describe the `tags` map as "regenerated from registry truth,"
+read **"every announced tag" (owner-curated)** post-ADR-6: the owner curates the tag
+set, and CI verifies each claimed row against the registry rather than the bot
+enumerating the registry to populate it (ADR-6 FP-2). Each row's *content* is still
+derived/verified from registry truth; only set *membership* is owner-decided.
+
+### BD-decision dispositions
+
+- **BD-4 — Untrusted input handling.** The `repository_dispatch` `client_payload`
+  *mechanism* is retired (there is no dispatch payload). The *hygiene* — length-cap,
+  `re.fullmatch`, `..`/absolute-path rejection, env-var indirection over `run:`
+  interpolation — carries forward to fork-PR claim verification (`core/verify_claims`;
+  `LocalFiles` path-safe joins for PR-added files). `core/validate_payload.py` and its
+  `PACKAGE_ID`-env caller are removed (ADR-6 FP-1/FP-9; Phases 2–3).
+- **BD-5 — Privileged/unprivileged split.** **Reaffirmed, load-bearing, unchanged in
+  shape** — it is precisely the defense the fork-PR lane needs (ADR-6 FP-7). The
+  unprivileged `schema-validate` job additionally runs claim verification on PR head
+  (re-derive + byte-compare, still zero secrets, anonymous GHCR reads). The privileged
+  `governance-gate` job (`pull_request_target`, never checks out PR head) additionally
+  enforces the owners-membership gate (G-19) and assigns reviewers from `maintainers.yml`
+  (G-20). Auto-merge stays `gh pr merge --auto --squash` composed with branch
+  protection; the only new condition on going green is G-19.
+- **BD-6 — Secrets and Environments.** The **Announce PAT row (G-17) is retired** — no
+  publisher-side index credential exists. The `index-write` Environment's role shrinks:
+  verify-only reconcile (G-12) no longer writes, and announce PRs originate from the
+  publisher's own fork rather than an index-side token, so the no-self-trigger rationale
+  for a distinct Environment token no longer applies to the announce path. The default
+  ambient `GITHUB_TOKEN` row stands — it is the only credential in the announce path, held
+  by the privileged job that never touches PR-head content (ADR-6 FP-7). Exact per-job
+  token wiring is Phase 3.
+
+### Governance-table delta
+
+Overrides the corresponding rows in *Governance Contract Carry-Forward* above, and adds
+G-19/G-20 (the series extends beyond G-18):
+
+| ID | Post-ADR-6 disposition | Notes |
+|---|---|---|
+| G-08 | **Retired** | No `repository_dispatch`/`client_payload`. Announce is a fork PR (ADR-6 FP-1); untrusted-input hygiene migrates to claim verification (BD-4 above). |
+| G-09 | **Reinterpreted** | `tags` is owner-curated (announced), not regenerated from every observed tag. Each row's *content* is still derived/verified from registry truth; scope narrows to the curated set (ADR-6 FP-2). |
+| G-11 | **Partially superseded** | "Publisher never enumerates" no longer holds — the owner curates the tag set (ADR-6 FP-2). Idempotency/cascade-safety within the curated scope is kept. |
+| G-12 | **Reframed verify-only** | Nightly reconcile never adds/removes/rewrites a tag, never opens a content PR. It verifies every committed claim against the registry and flags anomalies via issue (exit `65`, BD-2). Yanked rows are exempt from the registry-existence check (grace, ADR-6 FP-2/FP-3). |
+| G-17 | **Retired** | No namespace-scoped PAT. Announce abuse bounds become the fork-PR spam posture — label failed-check PRs + stale-close, no CAPTCHA/allowlist in v1 (ADR-6 FP-8). |
+| G-18 | **Collapses into always-dry** | Verify-only reconcile has no mutating mode to gate; `RECONCILE_DRY_RUN` is retired (ADR-6 FP-3). |
+| **G-19** (new) | **Owners-membership gate for the machine lane** | A fork PR qualifies for auto-merge only if its author's `github_id` is in the target root's committed `owners[]`. Evaluated by the privileged governance job from PR metadata + base-branch root — never PR-head content (ADR-6 FP-5). |
+| **G-20** (new) | **Maintainers-YAML reviewer assignment** | Human-lane PRs get reviewers assigned from a committed `maintainers.yml` (repo root or `.github/`; list of `{github, github_id}`) by the privileged governance job, plus an idempotent bot review-request comment (ADR-6 FP-6). |
+
+G-04 (new package = human review), G-05 (human-review key set), G-13 (committed root is
+the ledger), G-15 (ownership probe) and G-16 (the split itself) are **unchanged** — G-04
+is the "new package = human lane by design" rule the fork-PR lane relies on, and G-05's
+key set is the human-lane trigger.
 
 ## Changelog
 
@@ -526,3 +615,4 @@ reconcile.yml (nightly cron + workflow_dispatch)
 |------|--------|--------|
 | 2026-07-17 | Michael + Claude design swarm | Initial record from the 2026-07-16 design discussion |
 | 2026-07-17 | Phase 1 review-fix | BD-1/BD-3 corrected: sys.monitoring branch-coverage support needs Python 3.14+, not 3.12 — verified empirically (coverage 7.15.2 `CoverageWarning: Can't use core=sysmon`). Dropped the now-inert `core = "sysmon"` / `COVERAGE_CORE` settings from `bot/pyproject.toml`, `bot/taskfile.yml`, `ci.yml`; 3.12 floor kept for its own sake, not as a sysmon prerequisite. |
+| 2026-07-18 | Michael + Claude design swarm | Amendment A1 (fork-PR announce lane, ADR-6): BD-4 mechanism retired/hygiene carried forward, BD-5 reaffirmed + extended (G-19/G-20), BD-6 Announce-PAT retired; G-table delta — G-08/G-17 retired, G-11 partially superseded, G-12 reframed verify-only, G-18 collapses to always-dry, G-09 reinterpreted, G-19 (owners-membership auto-merge) + G-20 (maintainers-YAML reviewer assignment) added. Original rows preserved; markers point to Amendment A1. |
