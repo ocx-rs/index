@@ -84,7 +84,7 @@ const platforms = computed(() =>
       </span>
     </div>
 
-    <InstallRow :name="bareName" @click.stop />
+    <InstallRow :name="bareName" :latest-version="pkg.latestVersion" />
   </a>
 </template>
 
@@ -218,5 +218,18 @@ const platforms = computed(() =>
 .card-tag-count {
   font-family: var(--font-mono);
   font-size: var(--text-xs);
+}
+</style>
+
+<style>
+/* Unscoped: `.install-row` lives inside `InstallRow.vue`'s own scoped
+ * style, one component layer through `CopyContextMenu`'s slot passthrough —
+ * a `scoped` selector here isn't guaranteed to reach across that boundary.
+ * `:has()` gives `.package-card` here higher specificity than its own
+ * `:hover` rule above (a `:has()` argument's specificity counts toward the
+ * whole selector), so hovering the install box cancels the card's own
+ * hover border without touching the box's unrelated hover style. */
+.package-card:has(.install-row:hover) {
+  border-color: var(--c-line);
 }
 </style>
