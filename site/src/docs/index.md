@@ -15,7 +15,7 @@ explanation for the reasoning behind it.
 
 Look something up. Precise, exhaustive, no narrative.
 
-- [Wire Format](/docs/reference/wire-format) — the three frozen URL shapes,
+- [Wire Format](/docs/reference/wire-format) — the four frozen URL shapes,
   field semantics, freshness, `format_version` gating
 - [Entry Schema](/docs/reference/entry-schema) — full field table for the
   package root and observation object

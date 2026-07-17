@@ -7,7 +7,7 @@ title: Reference
 Wire-format spec, entry-schema field table, namespace policy, governance
 contracts, and the `format_version` changelog.
 
-- [Wire Format](./wire-format) — the three frozen URL shapes, field
+- [Wire Format](./wire-format) — the four frozen URL shapes, field
   semantics, freshness, `format_version` gating
 - [Entry Schema](./entry-schema) — full field table for the package root
   and observation object
