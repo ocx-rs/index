@@ -45,10 +45,16 @@ const props = withDefaults(defineProps<{
    * dedicated reasons list (VersionTree.vue's `.yanked-reasons`). Ignored
    * when `yanked` is false. */
   yankedReason?: string
+  /** Display override — shown instead of `tag` while every copy action and
+   * the context menu keep targeting `tag`. Lets a synthesized group header
+   * (e.g. major "1" with no real `1` tag on the wire) wear the uniform
+   * badge + menu, resolved to a concrete copyable tag underneath it. */
+  label?: string
 }>(), {
   variant: 'default',
   yanked: false,
   yankedReason: undefined,
+  label: undefined,
 })
 
 const emit = defineEmits<{ copied: [] }>()
@@ -95,7 +101,7 @@ async function handleClick() {
       v-bind="$attrs"
       @click="handleClick"
     >
-      <span class="tag-text">{{ tag }}</span>
+      <span class="tag-text">{{ label ?? tag }}</span>
       <CopyIcon :copied="true" :size="12" check-class="tag-check" />
     </code>
   </CopyContextMenu>

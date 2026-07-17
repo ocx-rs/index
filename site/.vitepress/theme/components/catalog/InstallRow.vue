@@ -2,7 +2,7 @@
 import { computed } from 'vue'
 import { useCopyState } from '../../composables/useCopyState'
 import CopyIcon from '../shared/CopyIcon.vue'
-import CopyContextMenu, { type CopyAction } from '../shared/CopyContextMenu.vue'
+import CopyContextMenu, { buildTagCopyActions } from '../shared/CopyContextMenu.vue'
 
 const props = defineProps<{
   /** Bare `<ns>/<pkg>` — this component builds the full `ocx add
@@ -23,28 +23,9 @@ const { copied, copyText } = useCopyState(1500)
 const qualifiedName = computed(() => `ocx.sh/${props.name}`)
 const command = computed(() => `ocx add ${qualifiedName.value}`)
 
-// TagBadge's `qualifiedName:tag` identifier, adapted: a catalog card has no
-// selected tag, so fall back to the bare qualified name when latestVersion
-// is unknown.
-const identifier = computed(() =>
-  props.latestVersion ? `${qualifiedName.value}:${props.latestVersion}` : qualifiedName.value,
-)
-
-const actions = computed<CopyAction[]>(() => {
-  const list: CopyAction[] = [
-    { label: 'Copy identifier', command: identifier.value, icon: 'identifier' },
-  ]
-  if (props.latestVersion) {
-    list.push({ label: 'Copy tag', command: props.latestVersion, icon: 'tag' })
-  }
-  list.push(
-    { label: 'Add to project', command: `ocx add ${identifier.value}`, icon: 'project' },
-    { label: 'Add globally', command: `ocx --global add ${identifier.value}`, icon: 'global' },
-    { label: 'Inspect command', command: `ocx package inspect ${identifier.value}`, icon: 'inspect' },
-    { label: 'Exec command', command: `ocx package exec ${identifier.value}`, icon: 'exec' },
-  )
-  return list
-})
+// Shared action builder — never hand-roll the list here (a local copy is
+// how this menu once drifted behind the detail page's).
+const actions = computed(() => buildTagCopyActions(qualifiedName.value, props.latestVersion))
 
 // The card wraps this component in `<a href>` (catalog grid navigates to
 // the detail page on click) — the box is a copy-only shorthand precisely so

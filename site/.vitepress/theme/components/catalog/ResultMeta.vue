@@ -4,10 +4,11 @@ import { onMounted, ref } from 'vue'
 const props = defineProps<{
   total: number
   filtered: number
-  /** Active FILTER CHIP labels only (platforms/keywords/deprecated) — not
-   * the free-text search query, which has its own "clear search" affordance
-   * in `EmptyState`'s no-match variant. */
+  /** Active FILTER CHIP labels only (platforms/keywords/deprecated). */
   activeFilterLabels: string[]
+  /** Free-text query active — the clear button covers it too ("clear all
+   * filters"), it just isn't echoed in the labels line. */
+  hasQuery: boolean
   /** `catalog.generated` — lexicographic-max ISO timestamp, or null. */
   generated: string | null
 }>()
@@ -39,7 +40,7 @@ onMounted(() => {
   <div class="result-meta">
     <span class="count">{{ filtered === total ? `${total} packages` : `${filtered} of ${total} packages` }}</span>
     <span class="filters">{{ activeFilterLabels.length ? activeFilterLabels.join(' · ') : 'sorted by name' }}</span>
-    <button v-if="activeFilterLabels.length" type="button" class="clear-btn" tabindex="-1" @click="$emit('clear-filters')">
+    <button v-if="activeFilterLabels.length || hasQuery" type="button" class="clear-btn" tabindex="-1" @click="$emit('clear-filters')">
       clear filters
     </button>
     <span class="spacer" />
