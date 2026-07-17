@@ -4,6 +4,7 @@
   "owners": [{ "github": "OCXbot", "github_id": 999999 }],
   "status": "deprecated",
   "deprecated_message": "Superseded by ocx.sh/ocx/mirror; see docs.",
+  "superseded_by": "ocx/mirror",
   "created": "2026-06-01",
   "desc": null,
   "tags": {

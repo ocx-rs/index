@@ -1,0 +1,8 @@
+{
+  "format_version": 1,
+  "packages": {
+    "kitware/cmake": "sha256:d11fc63c8c76e19b1b8b507384a61c604fce20dd2db6a1b70738c1a5da3e00ad",
+    "ocx/cli": "sha256:ee586d39dcbbc84cb96f421eba50528bb00a64582fd373017d48870502ef2a28",
+    "ocx/mirror": "sha256:86058f31eec89cedbfe9fb51580aadaa73fa1e38ec8801f206073450d26704d6"
+  }
+}
