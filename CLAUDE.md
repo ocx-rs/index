@@ -41,13 +41,27 @@ ADRs — [adr_locked_observation_index_format.md](./.claude/artifacts/adr_locked
 
 Execution of `plan_index_v1` is underway. Phase 3 (WP3-A) has landed: the
 render pipeline is live. `.github/workflows/render-deploy.yml` runs
-`task render:build` (indexbot render + VitePress build, fixed order — see
-`taskfile.yml`) and deploys `site/.vitepress/dist` to Cloudflare Pages,
-replacing the retired `public/config.json` + `index.html` placeholder and
-`deploy.yml`. Self-activating custom domains (`index.ocx.sh` canonical,
-`index.ocx.rs` legacy bootstrap) carried over verbatim into the new
-workflow. `p/` is still empty — seed data (Phase 4, 42+ entries) has not
-landed, so the deployed tree currently renders `config.json` only.
+`task render:build` (`site:build` then `indexbot render --out`, fixed
+order — see `taskfile.yml`) and deploys `site/.vitepress/dist` to
+Cloudflare Pages, replacing the retired `public/config.json` + `index.html`
+placeholder and `deploy.yml`. Self-activating custom domains (`index.ocx.sh`
+canonical, `index.ocx.rs` legacy bootstrap) carried over verbatim into the
+new workflow.
+
+The `plan_site_redesign` subplan has also landed (Waves 1–2, PRs #21–#26):
+`site/` is a blank custom VitePress theme (no `DefaultTheme`) built against
+the committed design mock
+([`design_mock_site_redesign/`](./.claude/artifacts/design_mock_site_redesign/)),
+with per-package detail pages as dynamic routes
+(`site/src/[ns]/[pkg].paths.ts`, globbing `p/*/*.json` at build — bot-
+generated wrapper pages retired, see
+[`adr_catalog_docs_colocation.md`](./.claude/artifacts/adr_catalog_docs_colocation.md)
+Amendment A1) and a render-emitted `/data/catalog/catalog.json` view-model
+feeding the catalog grid. `task site:serve` / `task demo:seed` give a local
+production-shaped preview for design review.
+
+`p/` is still empty — seed data (Phase 4, 42+ entries) has not landed, so
+the deployed tree currently renders `config.json` and an empty catalog.
 
 ## Rule Catalog
 
