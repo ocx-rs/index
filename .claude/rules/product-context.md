@@ -11,8 +11,8 @@ package manager. This repo is the source of truth for the sparse HTTP index serv
 Model: crates.io sparse index (RFC 2789 lineage). Static JSON over HTTPS — no server,
 no database, no API. Clients resolve logical package names (`ocx.sh/kitware/cmake`)
 through root files here to physical OCI registries (`ghcr.io/ocx-contrib/cmake`);
-each root records every observed tag as a content digest pointing at an immutable
-observation object (see Wire Contract below).
+each root records every announced tag (owner-curated) as a content digest pointing at
+an immutable observation object (see Wire Contract below).
 
 ## Wire Contract (one-way door)
 
@@ -20,16 +20,20 @@ Published URL shapes + JSON field semantics are **the** backward-compatibility
 surface. Once ocx clients ship with the baked endpoint, breaking either breaks
 installed binaries. Additive evolution only; `format_version` gates the rest.
 Design authority: [adr_locked_observation_index_format.md](../artifacts/adr_locked_observation_index_format.md)
-(index format) and [adr_namespace_policy.md](../artifacts/adr_namespace_policy.md)
-(namespace segment, reserved names).
+(index format), [adr_namespace_policy.md](../artifacts/adr_namespace_policy.md)
+(namespace segment, reserved names), and
+[adr_fork_pr_announce.md](../artifacts/adr_fork_pr_announce.md) (announce transport +
+`tags` provenance: fork PRs, owner-curated tags, verify-only reconcile).
 
 Four frozen URL shapes:
 
 - `/config.json` — `{"format_version": 1}`, nothing else
 - `/p/<namespace>/<package>.json` — package root: governance fields (`name`,
   `repository`, `owners`, `status`, `created`, `upstream`, `desc`, …) + `tags`,
-  a map from **every observed tag** to its content digest (`sha256` of the
-  observation object it points at)
+  a map from **every announced tag** (owner-curated — the owner announces the tags
+  they choose, each CI-verified against registry truth; see
+  [adr_fork_pr_announce.md](../artifacts/adr_fork_pr_announce.md)) to its content
+  digest (`sha256` of the observation object it points at)
 - `/p/<namespace>/<package>/o/sha256/<hex>.json` — observation object:
   content-addressed, immutable, `platforms[{platform, digest}]` where
   `platform` is an OCI platform object and `digest` is the manifest digest it
@@ -43,7 +47,10 @@ Four frozen URL shapes:
 
 Desc blobs (`/p/<namespace>/<package>/o/sha256/<hex>.{md,svg,png}` — README,
 logo) reuse the same content-addressed CAS convention as the observation
-object path above, but are not one of the three enumerated frozen shapes:
+object path above, and — like all package-local CAS content — their bytes are
+CI hash-verified against their path digest on announce (see
+[adr_fork_pr_announce.md](../artifacts/adr_fork_pr_announce.md) FP-4). They are
+not, however, one of the three enumerated frozen shapes:
 `plan_index_v1.md`'s Wire Format block leaves the desc-blob path unannotated
 for frozen-contract status, and this doc does not resolve that ambiguity on
 its own.

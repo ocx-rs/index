@@ -224,7 +224,7 @@ string; the corresponding CAS file is the same digest with `:` replaced by `/`.
 | `upstream` | `{org, repository_url?, disclaimer?}` | human (PR) | attribution of the upstream project the package mirrors, distinct from the namespace owner; feeds the catalog's upstream-disclaimer badge |
 | `superseded_by` | string \| null | human (PR) | optional; bare `<namespace>/<package>` naming a successor package, ≤140 chars; omitted or `null` when unset — **added 2026-07-17** by [`adr_enumeration_index.md`](./adr_enumeration_index.md) D7, not part of this ADR's original decision |
 | `desc` | `{digest, title, description, keywords[], readme?, logo?}` \| null | bot-regenerated | nullable — see D6 |
-| `tags` | map: tag name → `{content, observed, yanked?}` | bot-regenerated, except `yanked` (human, PR) | **every** observed tag, no filtering — see below |
+| `tags` | map: tag name → `{content, observed, yanked?}` | bot-regenerated, except `yanked` (human, PR) | **every** observed tag, no filtering — see below _(provenance amended 2026-07-18 → [`adr_fork_pr_announce.md`](./adr_fork_pr_announce.md) FP-2; note below)_ |
 
 `tags` is a map from every tag ever observed on the physical repository to:
 
@@ -240,6 +240,17 @@ string; the corresponding CAS file is the same digest with `:` replaced by `/`.
 D4) — it is not an OCI manifest or image-index digest. `yanked` is optional; its
 presence marks the row yanked (D2 continues in D9's yank semantics below). No
 `aliases` field exists anywhere in this schema — see D3.
+
+> **Amendment (2026-07-18, [`adr_fork_pr_announce.md`](./adr_fork_pr_announce.md)
+> FP-2):** the **wire shape above is unchanged** — the `tags` map, its row shape
+> (`{content, observed, yanked?}`), the observation-object layout (D4), and the D5
+> verifiability chain are all byte-identical. Only the *provenance* of the tag set
+> changes: it is now the **owner-curated set** announced through a fork PR, no longer
+> the full "every observed tag" enumeration. Each present row is still content-verified
+> against registry truth; only set *membership* is owner-decided. Yank (a grace marker
+> that survives, D9) and delete (owner drops the row) become distinct operations under
+> curation. This is a provenance/transport change, not a `format_version` break, and is
+> invisible to a resolving client.
 
 Example root, `/p/kitware/cmake.json`:
 
@@ -488,3 +499,4 @@ duplicated here.
 | 2026-07-17 | Michael Herwig + Claude design swarm | Amendment: D2's root-field table gains `superseded_by` (optional, human-governed), added by `adr_enumeration_index.md` D7 |
 | 2026-07-17 | Michael Herwig + Claude design swarm | Amendment: Fork 4/D8 canonical-tag stance revised — ocx-side `--canonical-tag` push flag flips from opt-in to default-on with `--no-canonical-tag` opt-out (ocx#215 follow-up); no change to this index's own posture, which ignores canonical tags either way |
 | 2026-07-17 | Michael Herwig + Claude design swarm | Amendment: D4 gains a sentence noting `schema/observation-object.schema.json`'s `platform` definition's `additionalProperties: false` tracks the OCI image-spec `Platform` field set in lockstep |
+| 2026-07-18 | Michael Herwig + Claude design swarm | Amendment: D2's `tags` provenance flips "every observed tag" → "every announced tag" (owner-curated), per `adr_fork_pr_announce.md` (ADR-6) FP-2 — wire shape, row shape, D4 observation objects, and the D5 chain all unchanged; provenance/transport change only, not a `format_version` break |
