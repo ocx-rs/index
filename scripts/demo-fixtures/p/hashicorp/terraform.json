@@ -22,15 +22,15 @@
   },
   "tags": {
     "latest": {
-      "content": "sha256:tttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttt",
+      "content": "sha256:b8b9e550a51324348e78cd7f895cf68b9b052a2e4d6dc0c2266dcb8af89122a4",
       "observed": "2026-07-10T00:00:00Z"
     },
     "1.9.0": {
-      "content": "sha256:tttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttt",
+      "content": "sha256:b8b9e550a51324348e78cd7f895cf68b9b052a2e4d6dc0c2266dcb8af89122a4",
       "observed": "2026-07-10T00:00:00Z"
     },
     "1.8.0": {
-      "content": "sha256:uuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuu",
+      "content": "sha256:8acdd153579f93c377979d3f4825d78b862356de118c8423694d60351f5350ac",
       "observed": "2026-06-01T00:00:00Z"
     }
   }

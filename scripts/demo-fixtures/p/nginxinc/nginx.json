@@ -18,39 +18,40 @@
       "http",
       "proxy",
       "web"
-    ]
+    ],
+    "logo": "sha256:de13b99f3a4edf3199be2c85113f00dd339005c1c7a3fb8f598017124fee9293"
   },
   "tags": {
     "latest": {
-      "content": "sha256:wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww",
+      "content": "sha256:b4748f5fb14e50efde5cbc4c0c7fd276c28876922cce91ac9f6f6433d31a486a",
       "observed": "2026-07-15T00:00:00Z"
     },
     "1": {
-      "content": "sha256:wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww",
+      "content": "sha256:b4748f5fb14e50efde5cbc4c0c7fd276c28876922cce91ac9f6f6433d31a486a",
       "observed": "2026-07-15T00:00:00Z"
     },
     "1.2": {
-      "content": "sha256:wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww",
+      "content": "sha256:b4748f5fb14e50efde5cbc4c0c7fd276c28876922cce91ac9f6f6433d31a486a",
       "observed": "2026-07-15T00:00:00Z"
     },
     "1.2.0": {
-      "content": "sha256:wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww",
+      "content": "sha256:b4748f5fb14e50efde5cbc4c0c7fd276c28876922cce91ac9f6f6433d31a486a",
       "observed": "2026-07-15T00:00:00Z"
     },
     "1.1.5": {
-      "content": "sha256:vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv",
+      "content": "sha256:46164976aa3be6bfe4fe433d5353d6bed520362a93df017694a7bc4444234f85",
       "observed": "2026-05-01T00:00:00Z"
     },
     "alpine-1.2.0": {
-      "content": "sha256:mmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmm",
+      "content": "sha256:2f25d5cf5a60ce7d928521bcc97b5519b243d7af7c82fd2f650dd64a4b43eb48",
       "observed": "2026-07-15T00:00:00Z"
     },
     "alpine-1.2": {
-      "content": "sha256:mmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmm",
+      "content": "sha256:2f25d5cf5a60ce7d928521bcc97b5519b243d7af7c82fd2f650dd64a4b43eb48",
       "observed": "2026-07-15T00:00:00Z"
     },
     "alpine-1": {
-      "content": "sha256:mmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmm",
+      "content": "sha256:2f25d5cf5a60ce7d928521bcc97b5519b243d7af7c82fd2f650dd64a4b43eb48",
       "observed": "2026-07-15T00:00:00Z"
     }
   }

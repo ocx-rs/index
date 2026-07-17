@@ -203,13 +203,17 @@ tasks:
       demo:serve` local design review (plan_site_redesign.md "Verification"
       item 3). Sources: the 7 bot/tests/golden/render/ golden-fixture cases
       plus scripts/demo-fixtures/ (deprecation, multi-platform, alias-chain/
-      variant-tag coverage the golden fixtures don't have). Idempotent —
-      re-running over leftover demo/p/ content just skips already-seeded
-      packages, no refuse-guard needed since demo/ is gitignored (nothing to
-      clobber). Demo digests are NOT schema-hex-valid (readability letters,
-      see script header), but demo/ is never read by task verify's pipeline
+      variant-tag coverage the golden fixtures don't have, plus a real SVG/
+      PNG logo and README so cards and detail pages have something to
+      render). Idempotent — re-running over leftover demo/p/ content just
+      skips already-seeded packages, no refuse-guard needed since demo/ is
+      gitignored (nothing to clobber). Only the golden-fixture cases' CAS
+      digests are NOT schema-hex-valid (readability letters, see script
+      header) — their logo/readme detail-page fetches gracefully fall back
+      to a monogram tile; scripts/demo-fixtures/ digests are genuine
+      sha256sums. Either way demo/ is never read by task verify's pipeline
       (schema:validate:rendered renders real p/, not demo/p/), so no
-      pre-verify cleanup step is needed either.
+      pre-verify cleanup step is needed.
     cmds:
       - scripts/demo-seed.sh
 
