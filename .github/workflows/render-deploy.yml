@@ -1,37 +1,66 @@
-name: deploy
+name: render-deploy
 
 on:
   push:
     branches: [main]
   workflow_dispatch:
 
-permissions:
-  contents: read
+permissions: {}
 
-# ponytail: single deploy workflow doubles as project bootstrap + domain attach.
-# Split out once real render CI (entry rendering, bot) lands in planning.
+# Replaces deploy.yml (Phase 3, WP3-A): renders the wire tree from p/ into
+# site/.vitepress/dist instead of deploying the tracked public/ placeholder
+# verbatim. The domain/DNS self-activation block below is ported VERBATIM
+# from deploy.yml (battle-tested across PRs #2-#5) -- do not redesign it
+# here, only the build+deploy source changed.
 jobs:
   deploy:
+    name: deploy
     runs-on: ubuntu-latest
     concurrency: deploy-pages
+    permissions:
+      contents: read
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
+        with:
+          persist-credentials: false
+      - uses: ./.github/actions/setup-bot
+      # no-cache: this job's own steps below publish to Cloudflare Pages
+      # (cloudflare/wrangler-action) -- default action caching here would be
+      # a cache-poisoning vector into that publish step (zizmor
+      # cache-poisoning finding, high). Bun-executable download is cheap;
+      # not worth the exposure.
+      - uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2.2.0
+        with:
+          no-cache: true
+
+      # ADR (adr_catalog_docs_colocation.md) "Build pipeline order" -- fixed,
+      # non-reorderable sequence: `indexbot render --site-dist` (pre-build
+      # wrapper pages) -> `bun run build` (VitePress `emptyOutDir: true`
+      # wipes site/.vitepress/dist clean) -> `indexbot render --out`
+      # (config.json + /p/** + /data/catalog/**, written INTO the same
+      # freshly-emptied tree). Swapping the last two steps silently deletes
+      # the wire JSON on the next deploy -- see taskfile.yml's render:build
+      # target, which encodes this order, not this workflow directly.
+      - name: task render:build
+        run: task render:build
+      - name: task schema:validate:rendered
+        run: task schema:validate:rendered
 
       # Idempotent: fails harmlessly if the project already exists.
       - name: Ensure Pages project
         continue-on-error: true
-        uses: cloudflare/wrangler-action@v3
+        uses: cloudflare/wrangler-action@9acf94ace14e7dc412b076f2c5c20b8ce93c79cd # v3.15.0
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           command: pages project create ocx-index --production-branch=main
 
-      - name: Deploy public/ to Cloudflare Pages
-        uses: cloudflare/wrangler-action@v3
+      - name: Deploy rendered tree to Cloudflare Pages
+        uses: cloudflare/wrangler-action@9acf94ace14e7dc412b076f2c5c20b8ce93c79cd # v3.15.0
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          command: pages deploy public --project-name=ocx-index --branch=main
+          command: pages deploy site/.vitepress/dist --project-name=ocx-index --branch=main
 
       # Canonical index endpoint: index.ocx.sh (ADR Amendment A1 — ocx.sh stays
       # canonical, ocx.rs parked). The ocx.sh zone is NOT on Cloudflare yet, so
@@ -43,7 +72,7 @@ jobs:
         env:
           CF_ACCOUNT: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           CF_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          CF_ZONE_OCXRS: e7e05c1d7edc241e4a7fde08e423483f  # ocx.rs zone id (bootstrap)
+          CF_ZONE_OCXRS: e7e05c1d7edc241e4a7fde08e423483f # ocx.rs zone id (bootstrap)
         run: |
           set -euo pipefail
           domains="https://api.cloudflare.com/client/v4/accounts/$CF_ACCOUNT/pages/projects/ocx-index/domains"
@@ -75,3 +104,20 @@ jobs:
           else
             echo "ocx.sh zone not visible to this token yet — skipping canonical domain attach."
           fi
+
+  smoke:
+    name: smoke
+    needs: deploy
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
+        with:
+          persist-credentials: false
+      # --allow-empty: pre-seed state (no p/ roots committed yet, Phase 4) —
+      # the digest-chain section tolerates a config.json-only deploy; every
+      # other check (ETag, cache-rule, catalog, docs) still runs and still
+      # contributes to the exit code.
+      - name: scripts/smoke-test.sh
+        run: scripts/smoke-test.sh https://index.ocx.sh --allow-empty

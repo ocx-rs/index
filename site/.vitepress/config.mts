@@ -17,6 +17,17 @@ export default defineConfig({
   description:
     'Package catalog and wire-format docs for the OCX public index (index.ocx.sh).',
 
+  // Per-package wrapper pages (core/catalog_md.py) link their CAS readme at
+  // /p/<ns>/<pkg>/o/sha256/<hex>.md — the wire mirror `indexbot render --out`
+  // writes into THIS SAME dist tree, but only in its second pass, after this
+  // build finishes (ADR adr_catalog_docs_colocation.md "Build pipeline
+  // order" — the emptyOutDir footgun). VitePress's own dead-link linter runs
+  // during this build, before those files exist, so every /p/** CAS
+  // reference is unconditionally "dead" from its perspective — expected,
+  // not a real broken link. Scoped to /p/ only; doc-to-doc links still get
+  // checked.
+  ignoreDeadLinks: [/^\/p\//],
+
   themeConfig: {
     // https://vitepress.dev/reference/default-theme-config
     nav: [

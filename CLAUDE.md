@@ -39,10 +39,15 @@ ADRs — [adr_locked_observation_index_format.md](./.claude/artifacts/adr_locked
 [adr_catalog_docs_colocation.md](./.claude/artifacts/adr_catalog_docs_colocation.md),
 [adr_index_bot_and_workflow_security.md](./.claude/artifacts/adr_index_bot_and_workflow_security.md).
 
-Execution of `plan_index_v1` is underway. Live surface is still the
-placeholder `public/config.json` + `index.html` (deploy workflow with
-self-activating custom domains — `index.ocx.sh` canonical, `index.ocx.rs`
-legacy bootstrap) until the render pipeline replaces it in Phase 3.
+Execution of `plan_index_v1` is underway. Phase 3 (WP3-A) has landed: the
+render pipeline is live. `.github/workflows/render-deploy.yml` runs
+`task render:build` (indexbot render + VitePress build, fixed order — see
+`taskfile.yml`) and deploys `site/.vitepress/dist` to Cloudflare Pages,
+replacing the retired `public/config.json` + `index.html` placeholder and
+`deploy.yml`. Self-activating custom domains (`index.ocx.sh` canonical,
+`index.ocx.rs` legacy bootstrap) carried over verbatim into the new
+workflow. `p/` is still empty — seed data (Phase 4, 42+ entries) has not
+landed, so the deployed tree currently renders `config.json` only.
 
 ## Rule Catalog
 
@@ -52,12 +57,11 @@ legacy bootstrap) until the render pipeline replaces it in Phase 3.
 
 | Path | Purpose |
 |---|---|
-| `public/` | Legacy placeholder — deployed verbatim to Pages; retired when render-deploy lands (Phase 3) |
-| `schema/` (incoming) | JSON Schemas for the wire contract (`config`, `root`, `observation-object`) |
-| `bot/` (incoming) | `indexbot` — `announce \| reconcile \| validate \| render \| seed-import` |
-| `site/` (incoming) | VitePress 2 catalog + docs, served at `index.ocx.sh` |
-| `p/` (incoming) | Package roots (`p/<ns>/<pkg>.json`) + package-local CAS observation objects (`p/<ns>/<pkg>/o/sha256/<hex>.json`) |
-| `.github/workflows/deploy.yml` | Pages deploy + domain/DNS self-activation |
+| `schema/` | JSON Schemas for the wire contract (`config`, `root`, `observation-object`) |
+| `bot/` | `indexbot` — `announce \| reconcile \| validate \| render \| seed-import` |
+| `site/` | VitePress 2 catalog + docs, served at `index.ocx.sh` |
+| `p/` | Package roots (`p/<ns>/<pkg>.json`) + package-local CAS observation objects (`p/<ns>/<pkg>/o/sha256/<hex>.json`) — empty until Phase 4 seed data lands |
+| `.github/workflows/render-deploy.yml` | Renders `p/` via `task render:build`, deploys `site/.vitepress/dist` to Pages + domain/DNS self-activation (replaces retired `deploy.yml`) |
 | `.claude/artifacts/` | Handover, ADR, design spec, research (ported from ocx + Phase-0 additions) |
 | `.claude/state/plans/` | Plans (gitignored) — Plan Status Protocol applies |
 
