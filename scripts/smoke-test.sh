@@ -9,8 +9,10 @@ IFS=$'\n\t'
 #   BASE_URL        Index base URL (default: https://index.ocx.sh)
 #   --allow-empty   Exit 0 when no /p/ root is discoverable (pre-seed state,
 #                    before Phase 4's 44 seeds land). Scoped ONLY to the
-#                    digest-chain section — all other checks always run and
-#                    always contribute to the exit code, --allow-empty or not.
+#                    digest-chain section — all other checks (including
+#                    data/catalog/catalog.json, which render always emits,
+#                    even pre-seed as "packages": []) always run and always
+#                    contribute to the exit code, --allow-empty or not.
 #   --root NS/PKG   Explicit sample package id to digest-chain-verify
 #                    (default: auto-discovered from the local p/ tree)
 #
@@ -18,12 +20,12 @@ IFS=$'\n\t'
 # format_version), conditional GET (If-None-Match -> 304), c/index.json
 # (200, ETag) with its own conditional GET (If-None-Match -> 304), a sample
 # root's digest chain (root tags[].content -> observation object ->
-# recomputed sha256), data/catalog/catalog.json (200 + has a "packages"
-# key — render always emits this tree, even an empty "packages": [] before
-# Phase 4 seeds land, so a non-200 here is tolerated only under
-# --allow-empty, same as the digest-chain section), catalog "/" (200,
-# text/html), "/docs/" (200). Every fetch is wrapped in a bounded retry (3
-# attempts, 5s apart) to absorb CDN warm-up.
+# recomputed sha256), data/catalog/catalog.json (200, valid JSON, has a
+# "packages" key — render always emits this tree, even pre-seed as
+# "packages": [], so a non-200/invalid-shape here is always a real failure,
+# never tolerated by --allow-empty), catalog "/" (200, text/html), "/docs/"
+# (200). Every fetch is wrapped in a bounded retry (3 attempts, 5s apart) to
+# absorb CDN warm-up.
 #
 # Exit codes (independent of indexbot's sysexits contract in
 # adr_index_bot_and_workflow_security.md BD-2 — this is a bash ops tool, not
@@ -249,22 +251,24 @@ check_catalog_json() {
   local body="${WORKDIR}/catalog-json.body" headers="${WORKDIR}/catalog-json.headers" status
   status=$(fetch "${BASE_URL}/data/catalog/catalog.json" "$body" "$headers")
   if [[ "$status" != "200" ]]; then
-    # render always emits this tree, even pre-seed ("packages": []) — a
-    # non-200 here is a real gap, tolerated only under --allow-empty (same
-    # pre-seed carve-out as the digest-chain section below).
-    if [[ "$ALLOW_EMPTY" -eq 1 ]]; then
-      skip "data/catalog/catalog.json" "HTTP ${status} tolerated (--allow-empty)"
-    else
-      fail "data/catalog/catalog.json" "expected HTTP 200, got ${status}" "$EXIT_HTTP"
-    fi
+    # render ALWAYS emits this tree, even pre-seed ("packages": []) -- a
+    # non-200 here is never a pre-seed artifact, so it is never tolerated by
+    # --allow-empty (unlike the digest-chain section below, which genuinely
+    # has no output before Phase 4 seeds land).
+    fail "data/catalog/catalog.json" "expected HTTP 200, got ${status}" "$EXIT_HTTP"
+    skip "data/catalog/catalog.json shape" "data/catalog/catalog.json fetch did not return 200"
     return
   fi
   pass "data/catalog/catalog.json" "HTTP 200"
 
+  if ! jq -e . "$body" >/dev/null 2>&1; then
+    fail "data/catalog/catalog.json shape" "invalid JSON" "$EXIT_SCHEMA"
+    return
+  fi
   if jq -e 'has("packages")' "$body" >/dev/null 2>&1; then
     pass "data/catalog/catalog.json shape" "has \"packages\" key"
   else
-    fail "data/catalog/catalog.json shape" "missing \"packages\" key" "$EXIT_SCHEMA"
+    fail "data/catalog/catalog.json shape" "valid JSON but missing \"packages\" key" "$EXIT_SCHEMA"
   fi
 }
 
