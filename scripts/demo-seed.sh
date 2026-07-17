@@ -19,19 +19,33 @@ IFS=$'\n\t'
 #   2. scripts/demo-fixtures/p/** — hand-authored packages covering surfaces
 #      no golden fixture exercises: status=deprecated + superseded_by, a
 #      readme with headings/code-fence/GFM-table, 4-platform observation
-#      objects differing across tags, and variant tags + a full
-#      latest/major/minor/patch alias chain sharing one digest. Not bot
+#      objects differing across tags, variant tags + a full
+#      latest/major/minor/patch alias chain sharing one digest, and a real
+#      SVG (packer) / PNG (nginx) logo + real README (packer). Not bot
 #      golden fixtures (no assertions in bot/tests/ depend on them) — kept
 #      separate so extending demo coverage never touches the bot's 100%
-#      branch-coverage test suite.
+#      branch-coverage test suite. Unlike the golden cases, every CAS
+#      digest here (blob filename, tags[*].content, desc.logo, desc.readme)
+#      is a genuine `sha256sum` of the referenced blob's bytes -- these
+#      packages' logos and readmes render on both the catalog card and the
+#      detail page.
 #
-# Caveat: none of this is `schema/fixtures/valid/` -- content digests use
-# readability letters (e.g. "rrrr...") outside the schema's [a-f0-9] hex
-# range, so seeded data fails `task schema:validate:rendered` / `task
-# verify`. Fine for `indexbot render` + visual review (neither re-validates
-# digest hex against the schema). demo/ is gitignored and never read by
-# `task verify`'s pipeline (see taskfile.yml), so this never needs manual
-# cleanup before a gate run.
+# Caveat: the 7 golden-sourced cases above are NOT `schema/fixtures/valid/`
+# -- their CAS digests use readability letters (e.g. "rrrr...") outside the
+# schema's [a-f0-9] hex range, so `site/utils/cas.ts`'s hex guard rejects
+# the detail-page logo/readme fetch it would otherwise build from
+# desc.logo/desc.readme (their identity tile gracefully falls back to a
+# monogram instead -- acceptable, these cases exist for bot-pipeline
+# coverage, not visual review). scripts/demo-fixtures/p/** above is exempt
+# from this caveat. Neither source's seeded data is
+# `schema/fixtures/valid/`-clean in the strictest sense (observation
+# objects' internal OCI platform-manifest digest -- a different digest
+# namespace the site never fetches, see schema/observation-object.schema.json
+# -- stays a readable placeholder in both), so seeded data still fails
+# `task schema:validate:rendered` / `task verify`. Fine for `indexbot
+# render` + visual review (neither re-validates digest hex against the
+# schema). demo/ is gitignored and never read by `task verify`'s pipeline
+# (see taskfile.yml), so this never needs manual cleanup before a gate run.
 
 SCRIPT_DIR=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
 REPO_ROOT=$(cd "${SCRIPT_DIR}/.." && pwd)

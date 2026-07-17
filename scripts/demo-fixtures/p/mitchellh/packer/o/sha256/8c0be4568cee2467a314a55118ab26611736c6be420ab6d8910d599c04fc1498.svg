@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="32" height="32" role="img" aria-label="Packer logo">
+  <path d="M2 11 L16 3 L30 11 L30 27 L16 32 L2 27 Z" fill="#5c4ee5"/>
+  <path d="M2 11 L16 16 L30 11" fill="none" stroke="#ffffff" stroke-width="1.2" stroke-linejoin="round"/>
+  <line x1="16" y1="16" x2="16" y2="32" stroke="#ffffff" stroke-width="1.2"/>
+</svg>
