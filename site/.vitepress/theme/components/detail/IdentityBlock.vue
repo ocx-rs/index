@@ -1,0 +1,228 @@
+<script setup lang="ts">
+import { computed, ref } from 'vue'
+import { useCopyState } from '../../composables/useCopyState'
+import { casUrl, LOGO_EXT_CANDIDATES } from '../../utils/cas'
+import { monogramHue, monogramInitials, MONOGRAM_HUES } from '../../utils/monogram'
+import type { PackageRoot } from '../../composables/usePackageRoot'
+
+const props = defineProps<{
+  root: PackageRoot
+  /** Bare `<ns>/<pkg>` route params — CAS URLs are built from this, NEVER
+   * `root.name` (see `usePackageRoot`'s CAS-gotcha docblock). */
+  bareName: string
+  /** Most precise live version tag aliased to `latest`, or `null` when
+   * there is no live `latest` (deprecated packages, or a package whose
+   * `latest` tag has no versioned alias) — DetailPage computes this once
+   * from the version table and shares it with MetaRail too. */
+  latestVersionLabel: string | null
+}>()
+
+const title = computed(() => props.root.desc?.title ?? props.bareName.split('/').pop() ?? props.bareName)
+const description = computed(() => props.root.desc?.description ?? '')
+const keywords = computed(() => props.root.desc?.keywords ?? [])
+const qualifiedDisplayName = computed(() => `ocx.sh/${props.bareName}`)
+
+const { copied, copyText } = useCopyState(1500)
+
+// Logo fallback chain: svg -> png -> monogram tile (same guess-and-retry
+// pattern as the catalog's PackageCard — see utils/cas.ts's ponytail note).
+const logoAttempt = ref(0)
+const logoSrc = computed(() => {
+  const ext = LOGO_EXT_CANDIDATES[logoAttempt.value]
+  if (!ext) return null
+  return casUrl(props.bareName, props.root.desc?.logo, ext)
+})
+function onLogoError() {
+  logoAttempt.value += 1
+}
+
+const hue = computed(() => monogramHue(props.bareName))
+const initials = computed(() => monogramInitials(props.bareName.split('/').pop() ?? props.bareName))
+// Both themes' hues passed as custom properties; CSS picks the active one
+// via the `.dark` class (same toggle mechanism as palette.css) — no JS
+// media query, SSR-safe.
+const monogramStyle = computed(() => ({
+  '--mg-bg-light': MONOGRAM_HUES.light.bg[hue.value],
+  '--mg-fg-light': MONOGRAM_HUES.light.text[hue.value],
+  '--mg-bg-dark': MONOGRAM_HUES.dark.bg[hue.value],
+  '--mg-fg-dark': MONOGRAM_HUES.dark.text[hue.value],
+}))
+</script>
+
+<template>
+  <div class="identity-block">
+    <img
+      v-if="logoSrc"
+      :src="logoSrc"
+      :alt="`${title} logo`"
+      class="identity-tile identity-logo"
+      @error="onLogoError"
+    >
+    <div v-else class="identity-tile identity-monogram" :style="monogramStyle">
+      {{ initials }}
+    </div>
+
+    <div class="identity-text">
+      <div class="identity-title-row">
+        <h1 class="identity-title">{{ title }}</h1>
+        <button type="button" class="identity-name-badge" @click="copyText(qualifiedDisplayName)">
+          <span>{{ qualifiedDisplayName }}</span>
+          <svg v-if="!copied" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+            <rect x="9" y="9" width="13" height="13" rx="2" />
+            <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
+          </svg>
+          <svg v-else width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" class="identity-check">
+            <polyline points="20 6 9 17 4 12" />
+          </svg>
+        </button>
+        <span v-if="latestVersionLabel" class="identity-latest">latest {{ latestVersionLabel }}</span>
+        <span v-if="root.status === 'deprecated'" class="identity-deprecated">DEPRECATED</span>
+      </div>
+
+      <p v-if="description" class="identity-desc">{{ description }}</p>
+
+      <div v-if="keywords.length" class="identity-keywords">
+        <span v-for="kw in keywords" :key="kw" class="identity-keyword">{{ kw }}</span>
+      </div>
+    </div>
+  </div>
+</template>
+
+<style scoped>
+.identity-block {
+  display: flex;
+  gap: 16px;
+  align-items: flex-start;
+}
+
+.identity-tile {
+  width: 52px;
+  height: 52px;
+  border-radius: var(--radius-lg);
+  flex-shrink: 0;
+  object-fit: contain;
+}
+
+.identity-monogram {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-mono);
+  font-size: var(--text-lg);
+  font-weight: 600;
+  background: var(--mg-bg-light);
+  color: var(--mg-fg-light);
+}
+
+:global(.dark) .identity-monogram {
+  background: var(--mg-bg-dark);
+  color: var(--mg-fg-dark);
+}
+
+.identity-text {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.identity-title-row {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.identity-title {
+  font-family: var(--font-sans);
+  font-size: var(--text-xl);
+  font-weight: 700;
+  color: var(--c-text-1);
+  line-height: 1.2;
+  margin: 0;
+}
+
+.identity-name-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font-family: var(--font-mono);
+  font-size: var(--text-sm);
+  font-weight: 500;
+  color: var(--c-text-2);
+  background: var(--c-surface-2);
+  border: 1px solid var(--c-line);
+  border-radius: var(--radius-sm);
+  padding: 3px 9px;
+  cursor: pointer;
+}
+
+.identity-name-badge:hover,
+.identity-name-badge:focus-visible {
+  border-color: var(--c-accent);
+  color: var(--c-text-1);
+}
+
+.identity-check {
+  color: var(--c-ok);
+}
+
+.identity-latest {
+  font-family: var(--font-mono);
+  font-size: var(--text-sm);
+  font-weight: 500;
+  color: var(--c-ok);
+}
+
+.identity-deprecated {
+  font-family: var(--font-mono);
+  font-size: var(--text-2xs);
+  font-weight: 600;
+  color: var(--c-accent-hover);
+  border: 1px solid var(--c-accent-hover);
+  border-radius: var(--radius-sm);
+  padding: 2px 8px;
+  letter-spacing: 0.05em;
+}
+
+.identity-desc {
+  font-family: var(--font-sans);
+  font-size: var(--text-md);
+  line-height: 1.55;
+  color: var(--c-text-2);
+  margin: 0;
+}
+
+.identity-keywords {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  margin-top: 2px;
+}
+
+.identity-keyword {
+  font-family: var(--font-mono);
+  font-size: var(--text-2xs);
+  font-weight: 500;
+  color: var(--c-kw);
+  background: var(--c-kw-bg);
+  padding: 2px 8px;
+  border-radius: var(--radius-sm);
+}
+
+@media (max-width: 640px) {
+  .identity-block {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+  }
+
+  .identity-title-row {
+    justify-content: center;
+  }
+
+  .identity-keywords {
+    justify-content: center;
+  }
+}
+</style>
