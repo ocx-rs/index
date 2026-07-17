@@ -1,0 +1,724 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="design_doc_mode" content="canvas">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&amp;family=IBM+Plex+Sans:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<style>
+body { margin: 0; background: #101216; -webkit-font-smoothing: antialiased; }
+a { color: #ff6047; } a:hover { color: #ff8570; }
+@keyframes pulse { 0%,100% { opacity: .55; } 50% { opacity: 1; } }
+</style>
+</helmet>
+<section style="padding:48px 56px 96px;display:flex;flex-direction:column;gap:28px;font-family:'IBM Plex Sans',sans-serif;min-width:fit-content">
+  <div style="display:flex;flex-direction:column;gap:6px;max-width:900px">
+    <div style="display:flex;align-items:center;gap:10px"><img src="assets/ocx-logo.svg" style="width:26px;height:26px" alt="ocx"><span style="font:600 15px 'IBM Plex Mono';color:#e8eaee">index.ocx.sh — redesign, turn 1</span></div>
+    <div style="font:400 13px/1.6 'IBM Plex Sans';color:#8a8f98;max-width:860px;text-wrap:pretty">One direction, full pass. Cool slate neutrals, IBM Plex Mono for every identifier, coral #ff6047 as the single interactive accent. Catalog IS the root. Fonts self-hosted in production (Google Fonts used only in this mock).</div>
+  </div>
+
+  <!-- ══════════ ROW 1: catalog light + dark ══════════ -->
+  <div style="display:flex;flex-wrap:wrap;gap:40px;align-items:flex-start">
+
+    <div id="1a" style="display:flex;flex-direction:column;gap:10px">
+      <div style="display:flex;align-items:baseline;gap:10px"><a href="#1a" style="font:600 11px 'IBM Plex Mono';background:#ff6047;color:#fff;padding:2px 8px;border-radius:999px;text-decoration:none">1a</a><span style="font:600 13px 'IBM Plex Sans';color:#e8eaee">Catalog root ( / ) — light, populated</span></div>
+      <div style="width:1240px;--bg:#f6f7f9;--surface:#ffffff;--surface2:#eff2f5;--line:#e2e6ec;--t1:#1b2129;--t2:#4b5665;--t3:#8a94a3;--accent:#ff6047;--ok:#0e9f6e;--warn:#9a6b13;--warnbg:rgba(250,184,51,.16);--kw:#6f5bd0;--kwbg:rgba(111,91,208,.09);background:var(--bg);color:var(--t1);border-radius:12px;overflow:hidden;box-shadow:0 12px 40px rgba(0,0,0,.5);border:1px solid #2a2e35;font-family:'IBM Plex Sans',sans-serif">
+        <div style="display:flex;align-items:center;gap:24px;padding:0 24px;height:54px;border-bottom:1px solid var(--line);background:var(--surface)">
+          <span style="display:inline-flex;align-items:center;gap:9px"><img src="assets/ocx-logo.svg" style="width:20px;height:20px" alt=""><span style="font:600 13px 'IBM Plex Mono';color:var(--t1)">index.ocx.sh</span></span>
+          <span style="flex:1"></span>
+          <span style="display:inline-flex;gap:22px;align-items:center">
+            <span style="font:500 12.5px 'IBM Plex Mono';color:var(--accent);border-bottom:2px solid var(--accent);padding:16px 1px 14px">catalog</span>
+            <span style="font:500 12.5px 'IBM Plex Mono';color:var(--t2)">docs</span>
+            <span style="font:500 12.5px 'IBM Plex Mono';color:var(--t2)">github ↗</span>
+          </span>
+          <span style="width:1px;height:20px;background:var(--line)"></span>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" style="color:var(--t3)"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
+        </div>
+        <div style="padding:20px 24px 24px;display:flex;flex-direction:column;gap:14px">
+          <div style="display:flex;align-items:center;gap:12px;background:var(--surface);border:1.5px solid var(--line);border-radius:8px;height:44px;padding:0 14px">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="color:var(--t3);flex-shrink:0"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+            <span style="flex:1;font:400 13px 'IBM Plex Mono';color:var(--t3)">search packages — name, keyword, description…</span>
+            <span style="font:500 10.5px 'IBM Plex Mono';color:var(--t3);border:1px solid var(--line);border-radius:4px;padding:2px 6px;background:var(--surface2)">⌘K</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+            <span style="display:inline-flex;align-items:center;gap:6px;font:500 11.5px 'IBM Plex Mono';color:var(--t2);border:1px solid var(--line);border-radius:999px;padding:4px 11px;background:var(--surface)">{{ osLinux }} linux</span>
+            <span style="display:inline-flex;align-items:center;gap:6px;font:500 11.5px 'IBM Plex Mono';color:var(--t2);border:1px solid var(--line);border-radius:999px;padding:4px 11px;background:var(--surface)">{{ osMac }} macos</span>
+            <span style="display:inline-flex;align-items:center;gap:6px;font:500 11.5px 'IBM Plex Mono';color:var(--t2);border:1px solid var(--line);border-radius:999px;padding:4px 11px;background:var(--surface)">{{ osWin }} windows</span>
+            <span style="width:1px;height:18px;background:var(--line);margin:0 4px"></span>
+            <sc-for list="{{ kwChips }}" as="kw" hint-placeholder-count="6">
+              <span style="font:500 11.5px 'IBM Plex Mono';color:var(--t2);border:1px solid var(--line);border-radius:999px;padding:4px 11px;background:var(--surface)">{{ kw }}</span>
+            </sc-for>
+            <span style="font:500 11.5px 'IBM Plex Mono';color:var(--t3);padding:4px 6px">+14 more</span>
+          </div>
+          <div style="display:flex;align-items:baseline;gap:10px">
+            <span style="font:600 12px 'IBM Plex Mono';color:var(--t1)">44 packages</span>
+            <span style="font:400 11.5px 'IBM Plex Mono';color:var(--t3)">sorted by name · updated 2h ago</span>
+          </div>
+          <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:12px">
+            <sc-for list="{{ pkgsLight }}" as="pkg" hint-placeholder-count="9">
+              <div style="display:flex;flex-direction:column;gap:9px;background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:14px 14px 12px" style-hover="border-color:#ff6047">
+                <div style="display:flex;align-items:center;gap:10px">
+                  <sc-if value="{{ pkg.hasTile }}" hint-placeholder-val="{{ true }}">
+                    <div style="width:34px;height:34px;border-radius:7px;display:flex;align-items:center;justify-content:center;background:{{ pkg.tileBg }};color:{{ pkg.tileFg }};font:600 14px 'IBM Plex Mono';flex-shrink:0">{{ pkg.tileCh }}</div>
+                  </sc-if>
+                  <sc-if value="{{ pkg.noTile }}" hint-placeholder-val="{{ false }}">
+                    <div style="width:34px;height:34px;border-radius:7px;display:flex;align-items:center;justify-content:center;background:var(--surface2);color:var(--t3);flex-shrink:0"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path><polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline><line x1="12" y1="22.08" x2="12" y2="12"></line></svg></div>
+                  </sc-if>
+                  <div style="min-width:0;flex:1;display:flex;flex-direction:column;gap:1px">
+                    <div style="display:flex;align-items:baseline;gap:8px"><span style="font:600 14.5px/1.3 'IBM Plex Sans';color:var(--t1)">{{ pkg.title }}</span><span style="font:500 11px 'IBM Plex Mono';color:var(--t3)">{{ pkg.ver }}</span></div>
+                    <div style="font:400 11px 'IBM Plex Mono';color:var(--t3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ pkg.name }}</div>
+                  </div>
+                </div>
+                <div style="font:400 12.5px/1.5 'IBM Plex Sans';color:var(--t2);display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;min-height:37px;text-wrap:pretty">{{ pkg.desc }}</div>
+                <div style="display:flex;align-items:center;justify-content:space-between;gap:8px">
+                  <span style="display:inline-flex;gap:6px;flex-wrap:wrap"><sc-for list="{{ pkg.kws }}" as="kw" hint-placeholder-count="2"><span style="font:500 10.5px 'IBM Plex Mono';color:var(--kw);background:var(--kwbg);padding:2px 7px;border-radius:4px">{{ kw }}</span></sc-for></span>
+                  <span style="display:inline-flex;align-items:center;gap:9px;color:var(--t3);flex-shrink:0">{{ pkg.icons }}<span style="font:400 11px 'IBM Plex Mono'">{{ pkg.tags }} tags</span></span>
+                </div>
+                <div style="display:flex;align-items:center;gap:8px;background:var(--surface2);border:1px solid var(--line);border-radius:6px;padding:6px 9px" style-hover="border-color:#ff6047">
+                  <span style="color:var(--accent);font:600 11.5px 'IBM Plex Mono'">$</span>
+                  <span style="flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font:400 11.5px 'IBM Plex Mono';color:var(--t1)">ocx install ocx.sh/{{ pkg.name }}</span>
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color:var(--t3);flex-shrink:0"><rect x="9" y="9" width="13" height="13" rx="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+                </div>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+      </div>
+      <sc-if value="{{ ann }}" hint-placeholder-val="{{ true }}"><div style="font:400 11px/1.7 'IBM Plex Mono';color:#7d838d;max-width:1240px">search autofocus on “/” or ⌘K · client-side filter over name / title / description / keywords · keyword chips = top-N by frequency across catalog, “+N more” expands · platform chips toggle · card click → /&lt;ns&gt;/&lt;pkg&gt; · install row click copies without navigating (hover lifts border to coral) · grid: auto-fill minmax(300px, 1fr)</div></sc-if>
+    </div>
+
+    <div id="1b" style="display:flex;flex-direction:column;gap:10px">
+      <div style="display:flex;align-items:baseline;gap:10px"><a href="#1b" style="font:600 11px 'IBM Plex Mono';background:#ff6047;color:#fff;padding:2px 8px;border-radius:999px;text-decoration:none">1b</a><span style="font:600 13px 'IBM Plex Sans';color:#e8eaee">Catalog — dark, filters active (linux + shell)</span></div>
+      <div style="width:1240px;--bg:#0e1116;--surface:#151a22;--surface2:#1c232d;--line:#252d39;--t1:#e7ebf1;--t2:#9aa5b3;--t3:#606c7c;--accent:#ff6047;--ok:#3edea6;--warn:#fab833;--warnbg:rgba(250,184,51,.10);--kw:#c0b3ff;--kwbg:rgba(192,179,255,.10);background:var(--bg);color:var(--t1);border-radius:12px;overflow:hidden;box-shadow:0 12px 40px rgba(0,0,0,.5);border:1px solid #2a2e35;font-family:'IBM Plex Sans',sans-serif">
+        <div style="display:flex;align-items:center;gap:24px;padding:0 24px;height:54px;border-bottom:1px solid var(--line);background:var(--surface)">
+          <span style="display:inline-flex;align-items:center;gap:9px"><img src="assets/ocx-logo.svg" style="width:20px;height:20px" alt=""><span style="font:600 13px 'IBM Plex Mono';color:var(--t1)">index.ocx.sh</span></span>
+          <span style="flex:1"></span>
+          <span style="display:inline-flex;gap:22px;align-items:center">
+            <span style="font:500 12.5px 'IBM Plex Mono';color:var(--accent);border-bottom:2px solid var(--accent);padding:16px 1px 14px">catalog</span>
+            <span style="font:500 12.5px 'IBM Plex Mono';color:var(--t2)">docs</span>
+            <span style="font:500 12.5px 'IBM Plex Mono';color:var(--t2)">github ↗</span>
+          </span>
+          <span style="width:1px;height:20px;background:var(--line)"></span>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" style="color:#fab833"><circle cx="12" cy="12" r="4"></circle><line x1="12" y1="2" x2="12" y2="4"></line><line x1="12" y1="20" x2="12" y2="22"></line><line x1="4.93" y1="4.93" x2="6.34" y2="6.34"></line><line x1="17.66" y1="17.66" x2="19.07" y2="19.07"></line><line x1="2" y1="12" x2="4" y2="12"></line><line x1="20" y1="12" x2="22" y2="12"></line><line x1="4.93" y1="19.07" x2="6.34" y2="17.66"></line><line x1="17.66" y1="6.34" x2="19.07" y2="4.93"></line></svg>
+        </div>
+        <div style="padding:20px 24px 24px;display:flex;flex-direction:column;gap:14px">
+          <div style="display:flex;align-items:center;gap:12px;background:var(--surface);border:1.5px solid var(--line);border-radius:8px;height:44px;padding:0 14px">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="color:var(--t3);flex-shrink:0"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+            <span style="flex:1;font:400 13px 'IBM Plex Mono';color:var(--t3)">search packages — name, keyword, description…</span>
+            <span style="font:500 10.5px 'IBM Plex Mono';color:var(--t3);border:1px solid var(--line);border-radius:4px;padding:2px 6px;background:var(--surface2)">⌘K</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+            <span style="display:inline-flex;align-items:center;gap:6px;font:500 11.5px 'IBM Plex Mono';color:#ff8570;border:1px solid rgba(255,96,71,.55);border-radius:999px;padding:4px 11px;background:rgba(255,96,71,.10)">{{ osLinux }} linux ✕</span>
+            <span style="display:inline-flex;align-items:center;gap:6px;font:500 11.5px 'IBM Plex Mono';color:var(--t2);border:1px solid var(--line);border-radius:999px;padding:4px 11px;background:var(--surface)">{{ osMac }} macos</span>
+            <span style="display:inline-flex;align-items:center;gap:6px;font:500 11.5px 'IBM Plex Mono';color:var(--t2);border:1px solid var(--line);border-radius:999px;padding:4px 11px;background:var(--surface)">{{ osWin }} windows</span>
+            <span style="width:1px;height:18px;background:var(--line);margin:0 4px"></span>
+            <span style="font:500 11.5px 'IBM Plex Mono';color:#ff8570;border:1px solid rgba(255,96,71,.55);border-radius:999px;padding:4px 11px;background:rgba(255,96,71,.10)">shell ✕</span>
+            <sc-for list="{{ kwChipsDark }}" as="kw" hint-placeholder-count="5">
+              <span style="font:500 11.5px 'IBM Plex Mono';color:var(--t2);border:1px solid var(--line);border-radius:999px;padding:4px 11px;background:var(--surface)">{{ kw }}</span>
+            </sc-for>
+            <span style="font:500 11.5px 'IBM Plex Mono';color:var(--t3);padding:4px 6px">+15 more</span>
+          </div>
+          <div style="display:flex;align-items:baseline;gap:10px">
+            <span style="font:600 12px 'IBM Plex Mono';color:var(--t1)">5 of 44 packages</span>
+            <span style="font:400 11.5px 'IBM Plex Mono';color:var(--t3)">linux · shell</span>
+            <span style="font:500 11.5px 'IBM Plex Mono';color:var(--accent)">clear filters</span>
+          </div>
+          <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:12px">
+            <sc-for list="{{ pkgsShell }}" as="pkg" hint-placeholder-count="5">
+              <div style="display:flex;flex-direction:column;gap:9px;background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:14px 14px 12px" style-hover="border-color:#ff6047">
+                <div style="display:flex;align-items:center;gap:10px">
+                  <sc-if value="{{ pkg.hasTile }}" hint-placeholder-val="{{ true }}">
+                    <div style="width:34px;height:34px;border-radius:7px;display:flex;align-items:center;justify-content:center;background:{{ pkg.tileBg }};color:{{ pkg.tileFg }};font:600 14px 'IBM Plex Mono';flex-shrink:0">{{ pkg.tileCh }}</div>
+                  </sc-if>
+                  <sc-if value="{{ pkg.noTile }}" hint-placeholder-val="{{ false }}">
+                    <div style="width:34px;height:34px;border-radius:7px;display:flex;align-items:center;justify-content:center;background:var(--surface2);color:var(--t3);flex-shrink:0"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path><polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline><line x1="12" y1="22.08" x2="12" y2="12"></line></svg></div>
+                  </sc-if>
+                  <div style="min-width:0;flex:1;display:flex;flex-direction:column;gap:1px">
+                    <div style="display:flex;align-items:baseline;gap:8px"><span style="font:600 14.5px/1.3 'IBM Plex Sans';color:var(--t1)">{{ pkg.title }}</span><span style="font:500 11px 'IBM Plex Mono';color:var(--t3)">{{ pkg.ver }}</span></div>
+                    <div style="font:400 11px 'IBM Plex Mono';color:var(--t3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ pkg.name }}</div>
+                  </div>
+                </div>
+                <div style="font:400 12.5px/1.5 'IBM Plex Sans';color:var(--t2);display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;min-height:37px;text-wrap:pretty">{{ pkg.desc }}</div>
+                <div style="display:flex;align-items:center;justify-content:space-between;gap:8px">
+                  <span style="display:inline-flex;gap:6px;flex-wrap:wrap"><sc-for list="{{ pkg.kws }}" as="kw" hint-placeholder-count="2"><span style="font:500 10.5px 'IBM Plex Mono';color:var(--kw);background:var(--kwbg);padding:2px 7px;border-radius:4px">{{ kw }}</span></sc-for></span>
+                  <span style="display:inline-flex;align-items:center;gap:9px;color:var(--t3);flex-shrink:0">{{ pkg.icons }}<span style="font:400 11px 'IBM Plex Mono'">{{ pkg.tags }} tags</span></span>
+                </div>
+                <div style="display:flex;align-items:center;gap:8px;background:var(--surface2);border:1px solid var(--line);border-radius:6px;padding:6px 9px" style-hover="border-color:#ff6047">
+                  <span style="color:var(--accent);font:600 11.5px 'IBM Plex Mono'">$</span>
+                  <span style="flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font:400 11.5px 'IBM Plex Mono';color:var(--t1)">ocx install ocx.sh/{{ pkg.name }}</span>
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color:var(--t3);flex-shrink:0"><rect x="9" y="9" width="13" height="13" rx="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+                </div>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+      </div>
+      <sc-if value="{{ ann }}" hint-placeholder-val="{{ true }}"><div style="font:400 11px/1.7 'IBM Plex Mono';color:#7d838d;max-width:1240px">active filters render coral with ✕ · result meta echoes “5 of 44” + one-tap clear · theme follows system, header toggle persists override (localStorage) · both palettes share the same coral — accents (green / amber / violet) shift per theme for contrast</div></sc-if>
+    </div>
+  </div>
+
+  <!-- ══════════ ROW 2: detail light + dark ══════════ -->
+  <div style="display:flex;flex-wrap:wrap;gap:40px;align-items:flex-start">
+
+    <div id="1c" style="display:flex;flex-direction:column;gap:10px">
+      <div style="display:flex;align-items:baseline;gap:10px"><a href="#1c" style="font:600 11px 'IBM Plex Mono';background:#ff6047;color:#fff;padding:2px 8px;border-radius:999px;text-decoration:none">1c</a><span style="font:600 13px 'IBM Plex Sans';color:#e8eaee">Package detail ( /kitware/cmake ) — light</span></div>
+      <div style="width:1240px;--bg:#f6f7f9;--surface:#ffffff;--surface2:#eff2f5;--line:#e2e6ec;--t1:#1b2129;--t2:#4b5665;--t3:#8a94a3;--accent:#ff6047;--ok:#0e9f6e;--warn:#9a6b13;--warnbg:rgba(250,184,51,.16);--kw:#6f5bd0;--kwbg:rgba(111,91,208,.09);background:var(--bg);color:var(--t1);border-radius:12px;overflow:hidden;box-shadow:0 12px 40px rgba(0,0,0,.5);border:1px solid #2a2e35;font-family:'IBM Plex Sans',sans-serif">
+        <div style="display:flex;align-items:center;gap:24px;padding:0 24px;height:54px;border-bottom:1px solid var(--line);background:var(--surface)">
+          <span style="display:inline-flex;align-items:center;gap:9px"><img src="assets/ocx-logo.svg" style="width:20px;height:20px" alt=""><span style="font:600 13px 'IBM Plex Mono';color:var(--t1)">index.ocx.sh</span></span>
+          <span style="flex:1"></span>
+          <span style="display:inline-flex;gap:22px;align-items:center"><span style="font:500 12.5px 'IBM Plex Mono';color:var(--accent);border-bottom:2px solid var(--accent);padding:16px 1px 14px">catalog</span><span style="font:500 12.5px 'IBM Plex Mono';color:var(--t2)">docs</span><span style="font:500 12.5px 'IBM Plex Mono';color:var(--t2)">github ↗</span></span>
+          <span style="width:1px;height:20px;background:var(--line)"></span>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" style="color:var(--t3)"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
+        </div>
+        <div style="padding:18px 24px 28px;display:flex;flex-direction:column;gap:16px">
+          <span style="display:inline-flex;align-items:center;gap:6px;font:500 12px 'IBM Plex Mono';color:var(--accent)"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5"></path><polyline points="12 19 5 12 12 5"></polyline></svg>all packages</span>
+          <div style="display:flex;gap:28px;align-items:flex-start">
+            <div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:16px">
+              <div style="display:flex;gap:16px;align-items:flex-start">
+                <div style="width:52px;height:52px;border-radius:10px;display:flex;align-items:center;justify-content:center;background:rgba(255,96,71,.10);color:#d84a34;font:600 20px 'IBM Plex Mono';flex-shrink:0">CM</div>
+                <div style="min-width:0;display:flex;flex-direction:column;gap:5px">
+                  <div style="display:flex;align-items:baseline;gap:12px;flex-wrap:wrap">
+                    <span style="font:700 23px/1.2 'IBM Plex Sans';color:var(--t1)">CMake</span>
+                    <span style="display:inline-flex;align-items:center;gap:7px;font:500 12px 'IBM Plex Mono';color:var(--t2);background:var(--surface2);border:1px solid var(--line);border-radius:5px;padding:3px 9px">kitware/cmake<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="color:var(--t3)"><rect x="9" y="9" width="13" height="13" rx="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg></span>
+                    <span style="font:500 12px 'IBM Plex Mono';color:var(--ok)">latest 3.31.7</span>
+                  </div>
+                  <div style="font:400 14px/1.55 'IBM Plex Sans';color:var(--t2);text-wrap:pretty">Cross-platform build-system generator and toolchain orchestrator.</div>
+                  <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:2px">
+                    <span style="font:500 10.5px 'IBM Plex Mono';color:var(--kw);background:var(--kwbg);padding:2px 8px;border-radius:4px">build</span>
+                    <span style="font:500 10.5px 'IBM Plex Mono';color:var(--kw);background:var(--kwbg);padding:2px 8px;border-radius:4px">c++</span>
+                    <span style="font:500 10.5px 'IBM Plex Mono';color:var(--kw);background:var(--kwbg);padding:2px 8px;border-radius:4px">toolchain</span>
+                  </div>
+                </div>
+              </div>
+              <div style="display:flex;align-items:flex-start;gap:10px;background:var(--warnbg);border:1px solid rgba(250,184,51,.45);border-radius:8px;padding:10px 14px">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color:var(--warn);flex-shrink:0;margin-top:1px"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+                <span style="font:400 12.5px/1.55 'IBM Plex Sans';color:var(--t1)">Community mirror maintained by OCX — <strong>not affiliated with Kitware, Inc.</strong> Upstream: <a href="#1c" style="color:var(--accent);text-decoration:none">github.com/Kitware/CMake ↗</a></span>
+              </div>
+              <div style="display:flex;flex-direction:column;gap:10px">
+                <div style="display:flex;align-items:baseline;gap:12px">
+                  <span style="font:600 11px 'IBM Plex Mono';color:var(--t3);letter-spacing:.06em">VERSIONS · 24</span>
+                  <span style="font:400 10.5px 'IBM Plex Mono';color:var(--t3)">click = copy identifier · right-click = more</span>
+                </div>
+                <div style="background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:4px 16px">
+                  <div style="display:flex;align-items:center;gap:14px;padding:11px 0;border-bottom:1px solid var(--line)">
+                    <span style="font:400 11.5px 'IBM Plex Mono';color:var(--t3);font-style:italic;width:76px;flex-shrink:0">(default)</span>
+                    <span style="display:inline-flex;align-items:stretch;border:1px solid var(--line);border-radius:5px;overflow:hidden">
+                      <span style="font:600 11.5px 'IBM Plex Mono';color:var(--accent);padding:4px 10px;background:rgba(255,96,71,.08)">latest</span>
+                      <span style="font:500 11.5px 'IBM Plex Mono';color:var(--t2);padding:4px 10px;border-left:1px solid var(--line)">3</span>
+                      <span style="font:500 11.5px 'IBM Plex Mono';color:var(--t2);padding:4px 10px;border-left:1px solid var(--line)">3.31</span>
+                      <span style="font:500 11.5px 'IBM Plex Mono';color:var(--t2);padding:4px 10px;border-left:1px solid var(--line)">3.31.7</span>
+                    </span>
+                    <span style="font:400 10.5px 'IBM Plex Mono';color:var(--t3)">= same digest, one copy target</span>
+                    <span style="flex:1"></span>
+                    <span style="display:inline-flex;align-items:center;gap:3px;font:500 10.5px 'IBM Plex Mono';color:var(--t2);background:var(--surface2);border-radius:4px;padding:3px 7px">−<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="transform:rotate(180deg)"><polyline points="6 9 12 15 18 9"></polyline></svg></span>
+                  </div>
+                  <div style="display:flex;gap:14px;padding:12px 0 14px;align-items:flex-start">
+                    <span style="font:600 11.5px 'IBM Plex Mono';color:var(--t2);width:76px;flex-shrink:0;padding-top:4px">3</span>
+                    <div style="display:flex;flex-direction:column;gap:10px;flex:1">
+                      <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+                        <sc-for list="{{ minors }}" as="m" hint-placeholder-count="4">
+                          <span style="display:inline-flex;align-items:center;gap:5px;font:500 11.5px 'IBM Plex Mono';color:var(--t2);border:1px solid var(--line);border-radius:5px;padding:4px 9px;background:var(--surface)">{{ m.tag }}<span style="color:var(--t3);font-size:10px">·{{ m.n }}</span></span>
+                        </sc-for>
+                      </div>
+                      <div style="display:flex;flex-direction:column;gap:8px;background:var(--surface2);border:1px solid var(--line);border-radius:7px;padding:10px 12px;max-width:560px">
+                        <span style="font:500 10px 'IBM Plex Mono';color:var(--t3);letter-spacing:.05em">3.30 — 6 PATCH RELEASES</span>
+                        <div style="display:flex;gap:7px;flex-wrap:wrap">
+                          <sc-for list="{{ patches }}" as="p" hint-placeholder-count="6">
+                            <span style="font:500 11px 'IBM Plex Mono';color:{{ p.color }};border:1px {{ p.border }};border-radius:4px;padding:3px 8px;background:var(--surface);text-decoration:{{ p.deco }}">{{ p.t }}</span>
+                          </sc-for>
+                        </div>
+                        <span style="display:inline-flex;align-items:center;gap:6px;font:400 10.5px 'IBM Plex Mono';color:var(--warn)"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>3.30.2 yanked — upstream artifact checksum mismatch · 2026-05-14</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div style="display:flex;flex-direction:column;gap:10px">
+                <span style="font:600 11px 'IBM Plex Mono';color:var(--t3);letter-spacing:.06em">README</span>
+                <div style="background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:20px 24px;display:flex;flex-direction:column;gap:12px">
+                  <span style="font:700 17px 'IBM Plex Sans';color:var(--t1)">CMake</span>
+                  <span style="font:400 13px/1.65 'IBM Plex Sans';color:var(--t2);text-wrap:pretty">CMake is an open-source, cross-platform family of tools designed to build, test and package software. This package ships the official Kitware binary release — <code style="font:500 12px 'IBM Plex Mono';background:var(--surface2);padding:1px 5px;border-radius:4px">cmake</code>, <code style="font:500 12px 'IBM Plex Mono';background:var(--surface2);padding:1px 5px;border-radius:4px">ctest</code> and <code style="font:500 12px 'IBM Plex Mono';background:var(--surface2);padding:1px 5px;border-radius:4px">cpack</code> — repacked as an OCI artifact.</span>
+                  <div style="background:#14181f;border-radius:7px;padding:12px 16px;font:400 12px/1.7 'IBM Plex Mono';color:#c8d0da">cmake -S . -B build<br>cmake --build build --parallel</div>
+                  <span style="font:400 12px 'IBM Plex Mono';color:var(--t3)">fetched from CAS · /p/kitware/cmake/o/sha256/9f2c….md</span>
+                </div>
+              </div>
+            </div>
+            <div style="width:300px;flex-shrink:0;display:flex;flex-direction:column;gap:14px">
+              <div style="background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:14px 16px;display:flex;flex-direction:column;gap:9px">
+                <span style="font:600 11px 'IBM Plex Mono';color:var(--t3);letter-spacing:.06em">INSTALL</span>
+                <div style="display:flex;align-items:center;gap:8px;background:var(--surface2);border:1px solid var(--line);border-radius:6px;padding:7px 10px" style-hover="border-color:#ff6047">
+                  <span style="color:var(--accent);font:600 11.5px 'IBM Plex Mono'">$</span>
+                  <span style="flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font:400 11.5px 'IBM Plex Mono';color:var(--t1)">ocx install ocx.sh/kitware/cmake</span>
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="color:var(--t3);flex-shrink:0"><rect x="9" y="9" width="13" height="13" rx="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+                </div>
+                <div style="display:flex;align-items:center;gap:8px;background:var(--surface2);border:1px solid rgba(14,159,110,.5);border-radius:6px;padding:7px 10px">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" style="color:var(--ok);flex-shrink:0"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                  <span style="flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font:400 11.5px 'IBM Plex Mono';color:var(--ok)">copied — pinned :3.31.7</span>
+                </div>
+                <span style="font:400 10.5px/1.6 'IBM Plex Mono';color:var(--t3)">↳ toggle: latest / pinned tag · second row shows the copied state (green, 1.5 s)</span>
+              </div>
+              <div style="background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:14px 16px;display:flex;flex-direction:column;gap:10px">
+                <span style="font:600 11px 'IBM Plex Mono';color:var(--t3);letter-spacing:.06em">PLATFORMS</span>
+                <sc-for list="{{ detailPlatforms }}" as="pl" hint-placeholder-count="3">
+                  <div style="display:flex;align-items:center;gap:10px">
+                    <span style="color:var(--t2);display:inline-flex;width:18px;justify-content:center">{{ pl.icon }}</span>
+                    <span style="font:500 12px 'IBM Plex Sans';color:var(--t1);width:70px">{{ pl.label }}</span>
+                    <span style="display:inline-flex;gap:6px"><sc-for list="{{ pl.arches }}" as="a" hint-placeholder-count="2"><span style="font:500 10.5px 'IBM Plex Mono';color:var(--t2);background:var(--surface2);border:1px solid var(--line);border-radius:4px;padding:2px 7px">{{ a }}</span></sc-for></span>
+                  </div>
+                </sc-for>
+                <span style="font:400 10.5px/1.6 'IBM Plex Mono';color:var(--t3)">↳ per-version matrix on tag hover (observation data)</span>
+              </div>
+              <div style="background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:14px 16px;display:flex;flex-direction:column;gap:9px">
+                <span style="font:600 11px 'IBM Plex Mono';color:var(--t3);letter-spacing:.06em">METADATA</span>
+                <div style="display:flex;flex-direction:column;gap:7px;font:400 11.5px 'IBM Plex Mono'">
+                  <div style="display:flex;gap:8px"><span style="color:var(--t3);width:74px;flex-shrink:0">registry</span><span style="color:var(--t1);min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">oci://ghcr.io/ocx-contrib/cmake</span></div>
+                  <div style="display:flex;gap:8px"><span style="color:var(--t3);width:74px;flex-shrink:0">owners</span><span style="color:var(--accent)">@michael-herwig</span></div>
+                  <div style="display:flex;gap:8px"><span style="color:var(--t3);width:74px;flex-shrink:0">upstream</span><span style="color:var(--accent)">Kitware/CMake ↗</span></div>
+                  <div style="display:flex;gap:8px"><span style="color:var(--t3);width:74px;flex-shrink:0">latest</span><span style="color:var(--t1)">3.31.7</span></div>
+                  <div style="display:flex;gap:8px"><span style="color:var(--t3);width:74px;flex-shrink:0">tags</span><span style="color:var(--t1)">24</span></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <sc-if value="{{ ann }}" hint-placeholder-val="{{ true }}"><div style="font:400 11px/1.7 'IBM Plex Mono';color:#7d838d;max-width:1240px">disclaimer banner is mandatory whenever upstream.disclaimer is present (governance) · alias chain: equal-digest tags render as one segmented control — latest highlighted, click copies “ocx.sh/kitware/cmake:&lt;tag&gt;” · major rows expand to minor groups; each minor carries a ·N patch count opening a popover · yanked versions struck, excluded from chain, reason surfaced inline</div></sc-if>
+    </div>
+
+    <div id="1d" style="display:flex;flex-direction:column;gap:10px">
+      <div style="display:flex;align-items:baseline;gap:10px"><a href="#1d" style="font:600 11px 'IBM Plex Mono';background:#ff6047;color:#fff;padding:2px 8px;border-radius:999px;text-decoration:none">1d</a><span style="font:600 13px 'IBM Plex Sans';color:#e8eaee">Detail — dark, deprecated package + tag context menu</span></div>
+      <div style="width:760px;--bg:#0e1116;--surface:#151a22;--surface2:#1c232d;--line:#252d39;--t1:#e7ebf1;--t2:#9aa5b3;--t3:#606c7c;--accent:#ff6047;--ok:#3edea6;--warn:#fab833;--warnbg:rgba(250,184,51,.10);--kw:#c0b3ff;--kwbg:rgba(192,179,255,.10);background:var(--bg);color:var(--t1);border-radius:12px;overflow:hidden;box-shadow:0 12px 40px rgba(0,0,0,.5);border:1px solid #2a2e35;font-family:'IBM Plex Sans',sans-serif">
+        <div style="padding:20px 24px 28px;display:flex;flex-direction:column;gap:16px">
+          <span style="display:inline-flex;align-items:center;gap:6px;font:500 12px 'IBM Plex Mono';color:var(--accent)"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5"></path><polyline points="12 19 5 12 12 5"></polyline></svg>all packages</span>
+          <div style="display:flex;align-items:flex-start;gap:10px;background:rgba(255,96,71,.10);border:1px solid rgba(255,96,71,.45);border-radius:8px;padding:11px 14px">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color:#ff8570;flex-shrink:0;margin-top:1px"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+            <span style="font:400 12.5px/1.55 'IBM Plex Sans';color:var(--t1)"><strong>Deprecated</strong> — superseded by <a href="#1d" style="color:var(--accent);text-decoration:none">mozilla/sccache</a>. Existing versions remain installable; no new releases will be mirrored.</span>
+          </div>
+          <div style="display:flex;gap:16px;align-items:flex-start">
+            <div style="width:52px;height:52px;border-radius:10px;display:flex;align-items:center;justify-content:center;background:var(--surface2);color:var(--t3);flex-shrink:0"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path><polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline><line x1="12" y1="22.08" x2="12" y2="12"></line></svg></div>
+            <div style="min-width:0;display:flex;flex-direction:column;gap:5px">
+              <div style="display:flex;align-items:baseline;gap:12px;flex-wrap:wrap">
+                <span style="font:700 23px/1.2 'IBM Plex Sans';color:var(--t1)">sccache-dist</span>
+                <span style="font:600 10.5px 'IBM Plex Mono';color:#ff8570;border:1px solid rgba(255,96,71,.5);border-radius:4px;padding:2px 8px;letter-spacing:.05em">DEPRECATED</span>
+              </div>
+              <span style="font:500 12px 'IBM Plex Mono';color:var(--t3)">mozilla/sccache-dist</span>
+              <span style="font:400 13.5px/1.5 'IBM Plex Sans';color:var(--t2)">Distributed compilation server for sccache build clusters.</span>
+            </div>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:10px;position:relative">
+            <span style="font:600 11px 'IBM Plex Mono';color:var(--t3);letter-spacing:.06em">VERSIONS · 8</span>
+            <div style="background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:4px 16px">
+              <div style="display:flex;align-items:center;gap:14px;padding:11px 0;border-bottom:1px solid var(--line)">
+                <span style="font:400 11.5px 'IBM Plex Mono';color:var(--t3);font-style:italic;width:76px;flex-shrink:0">(default)</span>
+                <span style="display:inline-flex;align-items:stretch;border:1px solid var(--line);border-radius:5px;overflow:hidden">
+                  <span style="font:500 11.5px 'IBM Plex Mono';color:var(--t2);padding:4px 10px">0</span>
+                  <span style="font:500 11.5px 'IBM Plex Mono';color:var(--t2);padding:4px 10px;border-left:1px solid var(--line)">0.10</span>
+                  <span style="font:500 11.5px 'IBM Plex Mono';color:#ff8570;padding:4px 10px;border-left:1px solid var(--line);background:rgba(255,96,71,.08)">0.10.0</span>
+                </span>
+                <span style="font:400 10.5px 'IBM Plex Mono';color:var(--t3)">no “latest” tag — deprecated</span>
+              </div>
+              <div style="display:flex;gap:14px;padding:12px 0 14px;align-items:center">
+                <span style="font:600 11.5px 'IBM Plex Mono';color:var(--t2);width:76px;flex-shrink:0">0</span>
+                <span style="display:inline-flex;gap:7px;flex-wrap:wrap">
+                  <span style="font:500 11px 'IBM Plex Mono';color:var(--t2);border:1px solid var(--line);border-radius:4px;padding:3px 8px;background:var(--surface2)">0.10.0</span>
+                  <span style="font:500 11px 'IBM Plex Mono';color:#39d98f;border:1px solid rgba(62,222,166,.6);border-radius:4px;padding:3px 8px;background:rgba(62,222,166,.10)">0.9.2 ✓</span>
+                  <span style="font:500 11px 'IBM Plex Mono';color:var(--t3);border:1px dashed rgba(250,184,51,.55);border-radius:4px;padding:3px 8px;background:var(--surface2);text-decoration:line-through">0.9.1</span>
+                  <span style="font:500 11px 'IBM Plex Mono';color:var(--t2);border:1px solid var(--line);border-radius:4px;padding:3px 8px;background:var(--surface2)">0.9.0</span>
+                </span>
+              </div>
+            </div>
+            <sc-if value="{{ menuMock }}" hint-placeholder-val="{{ true }}">
+              <div style="position:absolute;right:26px;top:64px;width:250px;background:var(--surface2);border:1px solid var(--line);border-radius:8px;box-shadow:0 14px 34px rgba(0,0,0,.55);padding:5px;display:flex;flex-direction:column;z-index:5">
+                <span style="display:flex;align-items:center;gap:9px;font:400 11.5px 'IBM Plex Mono';color:#fff;background:var(--accent);border-radius:5px;padding:7px 9px"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="9" y="9" width="13" height="13" rx="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>copy identifier</span>
+                <span style="display:flex;align-items:center;gap:9px;font:400 11.5px 'IBM Plex Mono';color:var(--t2);padding:7px 9px"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path><line x1="7" y1="7" x2="7.01" y2="7"></line></svg>copy tag</span>
+                <span style="display:flex;align-items:center;gap:9px;font:400 11.5px 'IBM Plex Mono';color:var(--t2);padding:7px 9px"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>copy install (project)</span>
+                <span style="display:flex;align-items:center;gap:9px;font:400 11.5px 'IBM Plex Mono';color:var(--t2);padding:7px 9px"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path></svg>copy install (global)</span>
+                <span style="display:flex;align-items:center;gap:9px;font:400 11.5px 'IBM Plex Mono';color:var(--t2);padding:7px 9px"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>copy inspect command</span>
+              </div>
+            </sc-if>
+          </div>
+          <div style="display:flex;align-items:center;gap:8px;background:var(--surface2);border:1px solid var(--line);border-radius:6px;padding:7px 10px;opacity:.75;max-width:420px">
+            <span style="color:var(--accent);font:600 11.5px 'IBM Plex Mono'">$</span>
+            <span style="flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font:400 11.5px 'IBM Plex Mono';color:var(--t1)">ocx install ocx.sh/mozilla/sccache-dist:0.10.0</span>
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="color:var(--t3);flex-shrink:0"><rect x="9" y="9" width="13" height="13" rx="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+          </div>
+        </div>
+      </div>
+      <sc-if value="{{ ann }}" hint-placeholder-val="{{ true }}"><div style="font:400 11px/1.7 'IBM Plex Mono';color:#7d838d;max-width:760px">deprecated: coral banner with deprecated_message, DEPRECATED badge, no “latest” in chain, install de-emphasized (75%) but pinned + functional · green = just-copied state (1.5 s) · dashed amber + strikethrough = yanked · context menu (right-click on any tag): the five copy actions from the current site, kept verbatim</div></sc-if>
+    </div>
+  </div>
+
+  <!-- ══════════ ROW 3: states + mobile ══════════ -->
+  <div style="display:flex;flex-wrap:wrap;gap:40px;align-items:flex-start">
+    <div id="1e" style="display:flex;flex-direction:column;gap:10px">
+      <div style="display:flex;align-items:baseline;gap:10px"><a href="#1e" style="font:600 11px 'IBM Plex Mono';background:#ff6047;color:#fff;padding:2px 8px;border-radius:999px;text-decoration:none">1e</a><span style="font:600 13px 'IBM Plex Sans';color:#e8eaee">States — loading · empty catalog (live today) · no match</span></div>
+      <div style="display:flex;gap:16px;align-items:flex-start">
+        <div style="width:380px;--surface:#ffffff;--surface2:#eff2f5;--line:#e2e6ec;--t3:#8a94a3;background:#f6f7f9;border-radius:12px;border:1px solid #2a2e35;box-shadow:0 12px 40px rgba(0,0,0,.5);padding:18px;display:flex;flex-direction:column;gap:12px;font-family:'IBM Plex Sans',sans-serif">
+          <div style="height:40px;background:var(--surface);border:1.5px solid var(--line);border-radius:8px"></div>
+          <div style="display:flex;flex-direction:column;gap:10px">
+            <div style="background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:14px;display:flex;flex-direction:column;gap:10px;animation:pulse 1.6s ease-in-out infinite">
+              <div style="display:flex;gap:10px;align-items:center"><div style="width:34px;height:34px;border-radius:7px;background:var(--surface2)"></div><div style="flex:1;display:flex;flex-direction:column;gap:6px"><div style="height:11px;width:45%;background:var(--surface2);border-radius:4px"></div><div style="height:9px;width:65%;background:var(--surface2);border-radius:4px"></div></div></div>
+              <div style="height:9px;width:92%;background:var(--surface2);border-radius:4px"></div>
+              <div style="height:26px;background:var(--surface2);border-radius:6px"></div>
+            </div>
+            <div style="background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:14px;display:flex;flex-direction:column;gap:10px;animation:pulse 1.6s ease-in-out .2s infinite">
+              <div style="display:flex;gap:10px;align-items:center"><div style="width:34px;height:34px;border-radius:7px;background:var(--surface2)"></div><div style="flex:1;display:flex;flex-direction:column;gap:6px"><div style="height:11px;width:55%;background:var(--surface2);border-radius:4px"></div><div style="height:9px;width:40%;background:var(--surface2);border-radius:4px"></div></div></div>
+              <div style="height:9px;width:80%;background:var(--surface2);border-radius:4px"></div>
+              <div style="height:26px;background:var(--surface2);border-radius:6px"></div>
+            </div>
+          </div>
+          <span style="font:400 10.5px 'IBM Plex Mono';color:var(--t3);text-align:center">skeletons, not spinners — no layout jump</span>
+        </div>
+        <div style="width:380px;background:#0e1116;border-radius:12px;border:1px solid #2a2e35;box-shadow:0 12px 40px rgba(0,0,0,.5);padding:44px 28px;display:flex;flex-direction:column;align-items:center;gap:12px;font-family:'IBM Plex Sans',sans-serif;text-align:center">
+          <img src="assets/ocx-logo.svg" style="width:44px;height:44px;opacity:.9" alt="">
+          <span style="font:600 15px 'IBM Plex Sans';color:#e7ebf1">No packages published yet</span>
+          <span style="font:400 12.5px/1.6 'IBM Plex Sans';color:#9aa5b3;text-wrap:pretty">The index is live but the first seeds haven’t landed. Watch the repo, or bring a mirror of your own.</span>
+          <div style="display:flex;gap:10px;margin-top:6px">
+            <span style="font:500 11.5px 'IBM Plex Mono';color:#fff;background:#ff6047;border-radius:6px;padding:7px 14px">request a package</span>
+            <span style="font:500 11.5px 'IBM Plex Mono';color:#9aa5b3;border:1px solid #252d39;border-radius:6px;padding:7px 14px">contribute a mirror</span>
+          </div>
+        </div>
+        <div style="width:380px;background:#f6f7f9;border-radius:12px;border:1px solid #2a2e35;box-shadow:0 12px 40px rgba(0,0,0,.5);padding:18px;display:flex;flex-direction:column;gap:14px;font-family:'IBM Plex Sans',sans-serif">
+          <div style="display:flex;align-items:center;gap:10px;background:#fff;border:1.5px solid #ff6047;border-radius:8px;height:40px;padding:0 13px">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="color:#8a94a3"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+            <span style="font:400 13px 'IBM Plex Mono';color:#1b2129">ziig<span style="color:#ff6047">|</span></span>
+          </div>
+          <div style="display:flex;flex-direction:column;align-items:center;gap:9px;padding:20px 10px;text-align:center">
+            <span style="font:600 14px 'IBM Plex Sans';color:#1b2129">No matches for “ziig”</span>
+            <span style="font:400 12px/1.6 'IBM Plex Sans';color:#4b5665">Check the spelling or drop a filter — 44 packages total.</span>
+            <div style="display:flex;gap:10px;margin-top:4px">
+              <span style="font:500 11.5px 'IBM Plex Mono';color:#ff6047;border:1px solid rgba(255,96,71,.5);border-radius:6px;padding:6px 12px">clear search</span>
+              <span style="font:500 11.5px 'IBM Plex Mono';color:#4b5665;border:1px solid #e2e6ec;border-radius:6px;padding:6px 12px">request “ziig” →</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div id="1g" style="display:flex;flex-direction:column;gap:10px">
+      <div style="display:flex;align-items:baseline;gap:10px"><a href="#1g" style="font:600 11px 'IBM Plex Mono';background:#ff6047;color:#fff;padding:2px 8px;border-radius:999px;text-decoration:none">1g</a><span style="font:600 13px 'IBM Plex Sans';color:#e8eaee">Mobile ≤ 640px — catalog · detail</span></div>
+      <div style="display:flex;gap:16px;align-items:flex-start">
+        <div style="width:375px;--bg:#f6f7f9;--surface:#ffffff;--surface2:#eff2f5;--line:#e2e6ec;--t1:#1b2129;--t2:#4b5665;--t3:#8a94a3;--accent:#ff6047;--kw:#6f5bd0;--kwbg:rgba(111,91,208,.09);background:var(--bg);border-radius:12px;border:1px solid #2a2e35;box-shadow:0 12px 40px rgba(0,0,0,.5);overflow:hidden;font-family:'IBM Plex Sans',sans-serif">
+          <div style="display:flex;align-items:center;gap:9px;padding:0 16px;height:50px;border-bottom:1px solid var(--line);background:var(--surface)">
+            <img src="assets/ocx-logo.svg" style="width:19px;height:19px" alt=""><span style="font:600 12.5px 'IBM Plex Mono';color:var(--t1)">index.ocx.sh</span>
+            <span style="flex:1"></span>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="color:var(--t2)"><line x1="3" y1="7" x2="21" y2="7"></line><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="17" x2="21" y2="17"></line></svg>
+          </div>
+          <div style="padding:12px 16px 20px;display:flex;flex-direction:column;gap:11px">
+            <div style="display:flex;align-items:center;gap:10px;background:var(--surface);border:1.5px solid var(--line);border-radius:8px;height:44px;padding:0 13px">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="color:var(--t3)"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+              <span style="font:400 12.5px 'IBM Plex Mono';color:var(--t3)">search packages…</span>
+            </div>
+            <div style="display:flex;gap:7px;overflow:hidden">
+              <span style="font:500 11px 'IBM Plex Mono';color:var(--t2);border:1px solid var(--line);border-radius:999px;padding:4px 10px;background:var(--surface);white-space:nowrap">{{ osLinux }}</span>
+              <span style="font:500 11px 'IBM Plex Mono';color:var(--t2);border:1px solid var(--line);border-radius:999px;padding:4px 10px;background:var(--surface);white-space:nowrap">{{ osMac }}</span>
+              <span style="font:500 11px 'IBM Plex Mono';color:var(--t2);border:1px solid var(--line);border-radius:999px;padding:4px 10px;background:var(--surface);white-space:nowrap">build</span>
+              <span style="font:500 11px 'IBM Plex Mono';color:var(--t2);border:1px solid var(--line);border-radius:999px;padding:4px 10px;background:var(--surface);white-space:nowrap">shell</span>
+              <span style="font:500 11px 'IBM Plex Mono';color:var(--t2);border:1px solid var(--line);border-radius:999px;padding:4px 10px;background:var(--surface);white-space:nowrap">javascript</span>
+            </div>
+            <span style="font:600 11.5px 'IBM Plex Mono';color:var(--t1)">44 packages</span>
+            <sc-for list="{{ pkgsMobile }}" as="pkg" hint-placeholder-count="3">
+              <div style="display:flex;flex-direction:column;gap:8px;background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:13px">
+                <div style="display:flex;align-items:center;gap:10px">
+                  <div style="width:34px;height:34px;border-radius:7px;display:flex;align-items:center;justify-content:center;background:{{ pkg.tileBg }};color:{{ pkg.tileFg }};font:600 14px 'IBM Plex Mono';flex-shrink:0">{{ pkg.tileCh }}</div>
+                  <div style="min-width:0;flex:1;display:flex;flex-direction:column;gap:1px">
+                    <div style="display:flex;align-items:baseline;gap:8px"><span style="font:600 14px 'IBM Plex Sans';color:var(--t1)">{{ pkg.title }}</span><span style="font:500 10.5px 'IBM Plex Mono';color:var(--t3)">{{ pkg.ver }}</span></div>
+                    <div style="font:400 10.5px 'IBM Plex Mono';color:var(--t3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ pkg.name }}</div>
+                  </div>
+                  <span style="display:inline-flex;gap:7px;color:var(--t3)">{{ pkg.icons }}</span>
+                </div>
+                <div style="font:400 12px/1.5 'IBM Plex Sans';color:var(--t2);display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden">{{ pkg.desc }}</div>
+                <div style="display:flex;align-items:center;gap:8px;background:var(--surface2);border:1px solid var(--line);border-radius:6px;padding:8px 10px;min-height:28px">
+                  <span style="color:var(--accent);font:600 11px 'IBM Plex Mono'">$</span>
+                  <span style="flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font:400 11px 'IBM Plex Mono';color:var(--t1)">ocx install ocx.sh/{{ pkg.name }}</span>
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="color:var(--t3)"><rect x="9" y="9" width="13" height="13" rx="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+                </div>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+        <div style="width:375px;--bg:#0e1116;--surface:#151a22;--surface2:#1c232d;--line:#252d39;--t1:#e7ebf1;--t2:#9aa5b3;--t3:#606c7c;--accent:#ff6047;--ok:#3edea6;--warn:#fab833;--warnbg:rgba(250,184,51,.10);--kw:#c0b3ff;--kwbg:rgba(192,179,255,.10);background:var(--bg);border-radius:12px;border:1px solid #2a2e35;box-shadow:0 12px 40px rgba(0,0,0,.5);overflow:hidden;font-family:'IBM Plex Sans',sans-serif">
+          <div style="display:flex;align-items:center;gap:9px;padding:0 16px;height:50px;border-bottom:1px solid var(--line);background:var(--surface)">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color:var(--accent)"><path d="M19 12H5"></path><polyline points="12 19 5 12 12 5"></polyline></svg>
+            <span style="font:600 12.5px 'IBM Plex Mono';color:var(--t1)">kitware/cmake</span>
+          </div>
+          <div style="padding:16px;display:flex;flex-direction:column;gap:13px">
+            <div style="display:flex;gap:12px;align-items:center">
+              <div style="width:44px;height:44px;border-radius:9px;display:flex;align-items:center;justify-content:center;background:rgba(255,96,71,.14);color:#ff8570;font:600 17px 'IBM Plex Mono';flex-shrink:0">CM</div>
+              <div style="display:flex;flex-direction:column;gap:2px;min-width:0">
+                <span style="font:700 18px 'IBM Plex Sans';color:var(--t1)">CMake</span>
+                <span style="font:500 11px 'IBM Plex Mono';color:var(--ok)">latest 3.31.7</span>
+              </div>
+            </div>
+            <div style="display:flex;align-items:center;gap:8px;background:var(--surface2);border:1px solid var(--line);border-radius:6px;padding:9px 11px">
+              <span style="color:var(--accent);font:600 11.5px 'IBM Plex Mono'">$</span>
+              <span style="flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font:400 11.5px 'IBM Plex Mono';color:var(--t1)">ocx install ocx.sh/kitware/cmake</span>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="color:var(--t3)"><rect x="9" y="9" width="13" height="13" rx="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+            </div>
+            <div style="display:flex;align-items:flex-start;gap:9px;background:var(--warnbg);border:1px solid rgba(250,184,51,.4);border-radius:7px;padding:9px 12px">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="color:var(--warn);flex-shrink:0;margin-top:2px"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+              <span style="font:400 11.5px/1.5 'IBM Plex Sans';color:var(--t1)">Community mirror — not affiliated with Kitware, Inc.</span>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:8px">
+              <span style="font:600 10.5px 'IBM Plex Mono';color:var(--t3);letter-spacing:.06em">VERSIONS · 24</span>
+              <div style="display:flex;gap:7px;flex-wrap:wrap">
+                <span style="font:600 11px 'IBM Plex Mono';color:var(--accent);border:1px solid rgba(255,96,71,.5);border-radius:4px;padding:4px 9px;background:rgba(255,96,71,.08)">latest</span>
+                <span style="font:500 11px 'IBM Plex Mono';color:var(--t2);border:1px solid var(--line);border-radius:4px;padding:4px 9px">3</span>
+                <span style="font:500 11px 'IBM Plex Mono';color:var(--t2);border:1px solid var(--line);border-radius:4px;padding:4px 9px">3.31</span>
+                <span style="font:500 11px 'IBM Plex Mono';color:var(--t2);border:1px solid var(--line);border-radius:4px;padding:4px 9px">3.31.7</span>
+                <span style="font:500 11px 'IBM Plex Mono';color:var(--t3);border:1px solid var(--line);border-radius:4px;padding:4px 9px">+18 ▾</span>
+              </div>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:8px">
+              <span style="font:600 10.5px 'IBM Plex Mono';color:var(--t3);letter-spacing:.06em">PLATFORMS</span>
+              <sc-for list="{{ detailPlatforms }}" as="pl" hint-placeholder-count="3">
+                <div style="display:flex;align-items:center;gap:9px">
+                  <span style="color:var(--t2);display:inline-flex;width:16px;justify-content:center">{{ pl.icon }}</span>
+                  <span style="font:500 11.5px 'IBM Plex Sans';color:var(--t1);width:64px">{{ pl.label }}</span>
+                  <span style="display:inline-flex;gap:5px"><sc-for list="{{ pl.arches }}" as="a" hint-placeholder-count="2"><span style="font:500 10px 'IBM Plex Mono';color:var(--t2);background:var(--surface2);border:1px solid var(--line);border-radius:4px;padding:2px 6px">{{ a }}</span></sc-for></span>
+                </div>
+              </sc-for>
+            </div>
+          </div>
+        </div>
+      </div>
+      <sc-if value="{{ ann }}" hint-placeholder-val="{{ true }}"><div style="font:400 11px/1.7 'IBM Plex Mono';color:#7d838d;max-width:766px">single column · chip row scrolls horizontally · install command first on detail (44px min hit targets) · rail sections stack above README · version tree collapses to key-tag chips + “+N”</div></sc-if>
+    </div>
+  </div>
+
+  <!-- ══════════ ROW 4: docs + foundations ══════════ -->
+  <div style="display:flex;flex-wrap:wrap;gap:40px;align-items:flex-start">
+    <div id="1f" style="display:flex;flex-direction:column;gap:10px">
+      <div style="display:flex;align-items:baseline;gap:10px"><a href="#1f" style="font:600 11px 'IBM Plex Mono';background:#ff6047;color:#fff;padding:2px 8px;border-radius:999px;text-decoration:none">1f</a><span style="font:600 13px 'IBM Plex Sans';color:#e8eaee">Docs skin ( /docs/reference/wire-format ) — VitePress-compatible</span></div>
+      <div style="width:1240px;--bg:#f6f7f9;--surface:#ffffff;--surface2:#eff2f5;--line:#e2e6ec;--t1:#1b2129;--t2:#4b5665;--t3:#8a94a3;--accent:#ff6047;background:var(--bg);color:var(--t1);border-radius:12px;overflow:hidden;box-shadow:0 12px 40px rgba(0,0,0,.5);border:1px solid #2a2e35;font-family:'IBM Plex Sans',sans-serif">
+        <div style="display:flex;align-items:center;gap:24px;padding:0 24px;height:54px;border-bottom:1px solid var(--line);background:var(--surface)">
+          <span style="display:inline-flex;align-items:center;gap:9px"><img src="assets/ocx-logo.svg" style="width:20px;height:20px" alt=""><span style="font:600 13px 'IBM Plex Mono';color:var(--t1)">index.ocx.sh</span></span>
+          <span style="flex:1"></span>
+          <span style="display:inline-flex;gap:22px;align-items:center"><span style="font:500 12.5px 'IBM Plex Mono';color:var(--t2)">catalog</span><span style="font:500 12.5px 'IBM Plex Mono';color:var(--accent);border-bottom:2px solid var(--accent);padding:16px 1px 14px">docs</span><span style="font:500 12.5px 'IBM Plex Mono';color:var(--t2)">github ↗</span></span>
+          <span style="width:1px;height:20px;background:var(--line)"></span>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" style="color:var(--t3)"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
+        </div>
+        <div style="display:flex">
+          <div style="width:250px;flex-shrink:0;border-right:1px solid var(--line);background:var(--surface);padding:20px 0 28px;display:flex;flex-direction:column;gap:18px">
+            <div style="display:flex;flex-direction:column;gap:2px;padding:0 12px">
+              <span style="font:600 10px 'IBM Plex Mono';color:var(--t3);letter-spacing:.09em;padding:6px 12px">REFERENCE</span>
+              <span style="font:500 13px 'IBM Plex Sans';color:var(--accent);background:rgba(255,96,71,.08);border-radius:6px;padding:6px 12px">Wire format</span>
+              <span style="font:400 13px 'IBM Plex Sans';color:var(--t2);padding:6px 12px">Entry schema</span>
+              <span style="font:400 13px 'IBM Plex Sans';color:var(--t2);padding:6px 12px">Namespace policy</span>
+              <span style="font:400 13px 'IBM Plex Sans';color:var(--t2);padding:6px 12px">Governance contracts</span>
+              <span style="font:400 13px 'IBM Plex Sans';color:var(--t2);padding:6px 12px">Changelog</span>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:2px;padding:0 12px">
+              <span style="font:600 10px 'IBM Plex Mono';color:var(--t3);letter-spacing:.09em;padding:6px 12px">HOW-TO</span>
+              <span style="font:400 13px 'IBM Plex Sans';color:var(--t2);padding:6px 12px">Claim a namespace</span>
+              <span style="font:400 13px 'IBM Plex Sans';color:var(--t2);padding:6px 12px">Announce a package</span>
+              <span style="font:400 13px 'IBM Plex Sans';color:var(--t2);padding:6px 12px">Yank a version</span>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:2px;padding:0 12px">
+              <span style="font:600 10px 'IBM Plex Mono';color:var(--t3);letter-spacing:.09em;padding:6px 12px">OPS</span>
+              <span style="font:400 13px 'IBM Plex Sans';color:var(--t2);padding:6px 12px">M1 flip</span>
+              <span style="font:400 13px 'IBM Plex Sans';color:var(--t2);padding:6px 12px">Rotate announce PAT</span>
+              <span style="font:400 13px 'IBM Plex Sans';color:var(--t2);padding:6px 12px">Reconcile dry-run</span>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:2px;padding:0 12px">
+              <span style="font:600 10px 'IBM Plex Mono';color:var(--t3);letter-spacing:.09em;padding:6px 12px">EXPLANATION</span>
+              <span style="font:400 13px 'IBM Plex Sans';color:var(--t2);padding:6px 12px">Architecture</span>
+            </div>
+          </div>
+          <div style="flex:1;min-width:0;padding:32px 40px 44px;display:flex;flex-direction:column;gap:16px;max-width:720px">
+            <span style="font:500 11px 'IBM Plex Mono';color:var(--t3)">reference</span>
+            <span style="font:700 26px/1.25 'IBM Plex Sans';color:var(--t1);letter-spacing:-.01em">Wire format</span>
+            <span style="font:400 14px/1.7 'IBM Plex Sans';color:var(--t2);text-wrap:pretty">The wire contract is the frozen surface every OCX client resolves against: <code style="font:500 12.5px 'IBM Plex Mono';background:var(--surface2);padding:1px 6px;border-radius:4px">/config.json</code> plus everything under <code style="font:500 12.5px 'IBM Plex Mono';background:var(--surface2);padding:1px 6px;border-radius:4px">/p/**</code>. It is additive-only; <code style="font:500 12.5px 'IBM Plex Mono';background:var(--surface2);padding:1px 6px;border-radius:4px">format_version</code> gates anything else.</span>
+            <span style="font:600 18px 'IBM Plex Sans';color:var(--t1);margin-top:6px">Root document</span>
+            <div style="background:#14181f;border-radius:8px;padding:14px 18px;font:400 12px/1.75 'IBM Plex Mono';color:#c8d0da"><span style="color:#606c7c">// GET /p/kitware/cmake.json</span><br>{"format_version": <span style="color:#fab833">1</span>,<br>&nbsp;"name": <span style="color:#3edea6">"kitware/cmake"</span>,<br>&nbsp;"repository": <span style="color:#3edea6">"oci://ghcr.io/ocx-contrib/cmake"</span>,<br>&nbsp;"owners": [<span style="color:#3edea6">"michael-herwig"</span>] }</div>
+            <div style="border:1px solid var(--line);border-radius:8px;overflow:hidden">
+              <div style="display:grid;grid-template-columns:150px 110px 1fr;background:var(--surface2);border-bottom:1px solid var(--line)"><span style="font:600 11px 'IBM Plex Mono';color:var(--t3);padding:8px 14px">FIELD</span><span style="font:600 11px 'IBM Plex Mono';color:var(--t3);padding:8px 14px">TYPE</span><span style="font:600 11px 'IBM Plex Mono';color:var(--t3);padding:8px 14px">NOTES</span></div>
+              <div style="display:grid;grid-template-columns:150px 110px 1fr;background:var(--surface);border-bottom:1px solid var(--line)"><span style="font:500 12px 'IBM Plex Mono';color:var(--t1);padding:8px 14px">name</span><span style="font:400 12px 'IBM Plex Mono';color:var(--t3);padding:8px 14px">string</span><span style="font:400 12.5px 'IBM Plex Sans';color:var(--t2);padding:8px 14px">namespace/package — vendor identity</span></div>
+              <div style="display:grid;grid-template-columns:150px 110px 1fr;background:var(--surface);border-bottom:1px solid var(--line)"><span style="font:500 12px 'IBM Plex Mono';color:var(--t1);padding:8px 14px">owners</span><span style="font:400 12px 'IBM Plex Mono';color:var(--t3);padding:8px 14px">string[]</span><span style="font:400 12.5px 'IBM Plex Sans';color:var(--t2);padding:8px 14px">GitHub logins governing the entry</span></div>
+              <div style="display:grid;grid-template-columns:150px 110px 1fr;background:var(--surface)"><span style="font:500 12px 'IBM Plex Mono';color:var(--t1);padding:8px 14px">upstream</span><span style="font:400 12px 'IBM Plex Mono';color:var(--t3);padding:8px 14px">object</span><span style="font:400 12.5px 'IBM Plex Sans';color:var(--t2);padding:8px 14px">attribution; disclaimer must surface in UI</span></div>
+            </div>
+            <div style="display:flex;gap:10px;background:var(--surface2);border:1px solid var(--line);border-radius:8px;padding:12px 16px;align-items:flex-start">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="color:#ff6047;flex-shrink:0;margin-top:2px"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+              <span style="font:400 12.5px/1.6 'IBM Plex Sans';color:var(--t2)"><strong style="color:var(--t1)">One-way door.</strong> <code style="font:500 11.5px 'IBM Plex Mono';background:var(--surface);padding:1px 5px;border-radius:4px">/p/**</code> is additive-only — a breaking change requires a format_version bump.</span>
+            </div>
+          </div>
+          <div style="width:180px;flex-shrink:0;padding:36px 24px 0;display:flex;flex-direction:column;gap:8px">
+            <span style="font:600 10px 'IBM Plex Mono';color:var(--t3);letter-spacing:.09em">ON THIS PAGE</span>
+            <span style="font:400 12px 'IBM Plex Sans';color:var(--accent);border-left:2px solid var(--accent);padding-left:10px">Root document</span>
+            <span style="font:400 12px 'IBM Plex Sans';color:var(--t2);border-left:2px solid var(--line);padding-left:10px">Observations</span>
+            <span style="font:400 12px 'IBM Plex Sans';color:var(--t2);border-left:2px solid var(--line);padding-left:10px">CAS objects</span>
+          </div>
+        </div>
+      </div>
+      <sc-if value="{{ ann }}" hint-placeholder-val="{{ true }}"><div style="font:400 11px/1.7 'IBM Plex Mono';color:#7d838d;max-width:1240px">implementation: map tokens onto VitePress vars (--vp-c-brand-* → coral, --vp-c-bg* → slate neutrals, --vp-font-family-mono → IBM Plex Mono) — markdown pipeline, search and sidebar config untouched · sidebar = Diátaxis groups with mono uppercase labels · code blocks always dark (both themes)</div></sc-if>
+    </div>
+  </div>
+
+  <!-- ══════════ ROW 5: foundations + inventory ══════════ -->
+  <div style="display:flex;flex-wrap:wrap;gap:40px;align-items:flex-start">
+    <div id="1h" style="display:flex;flex-direction:column;gap:10px">
+      <div style="display:flex;align-items:baseline;gap:10px"><a href="#1h" style="font:600 11px 'IBM Plex Mono';background:#ff6047;color:#fff;padding:2px 8px;border-radius:999px;text-decoration:none">1h</a><span style="font:600 13px 'IBM Plex Sans';color:#e8eaee">Foundations</span></div>
+      <div style="width:600px;background:#171a20;border:1px solid #2a2e35;border-radius:12px;padding:24px 28px;display:flex;flex-direction:column;gap:22px;font-family:'IBM Plex Sans',sans-serif">
+        <div style="display:flex;flex-direction:column;gap:10px">
+          <span style="font:600 11px 'IBM Plex Mono';color:#606c7c;letter-spacing:.08em">TYPE — SELF-HOSTED WOFF2</span>
+          <span style="font:700 22px 'IBM Plex Sans';color:#e7ebf1">IBM Plex Sans — titles &amp; prose</span>
+          <span style="font:500 15px 'IBM Plex Mono';color:#e7ebf1">IBM Plex Mono — every identifier, version, label, command</span>
+          <span style="font:400 11.5px/1.7 'IBM Plex Mono';color:#7d838d">scale: 26 / 23 / 18 / 14.5 / 13 / 12.5 / 11.5 / 10.5 · weights 400–700 · mono is the voice of the product; sans only where humans read sentences</span>
+        </div>
+        <div style="display:flex;gap:28px">
+          <div style="flex:1;display:flex;flex-direction:column;gap:8px">
+            <span style="font:600 11px 'IBM Plex Mono';color:#606c7c;letter-spacing:.08em">LIGHT</span>
+            <sc-for list="{{ swatchesLight }}" as="s" hint-placeholder-count="7">
+              <div style="display:flex;align-items:center;gap:10px"><span style="width:26px;height:26px;border-radius:6px;background:{{ s.hex }};border:1px solid #2a2e35;flex-shrink:0"></span><span style="font:500 11px 'IBM Plex Mono';color:#c8d0da;width:76px">{{ s.name }}</span><span style="font:400 11px 'IBM Plex Mono';color:#606c7c">{{ s.hex }}</span></div>
+            </sc-for>
+          </div>
+          <div style="flex:1;display:flex;flex-direction:column;gap:8px">
+            <span style="font:600 11px 'IBM Plex Mono';color:#606c7c;letter-spacing:.08em">DARK</span>
+            <sc-for list="{{ swatchesDark }}" as="s" hint-placeholder-count="7">
+              <div style="display:flex;align-items:center;gap:10px"><span style="width:26px;height:26px;border-radius:6px;background:{{ s.hex }};border:1px solid #2a2e35;flex-shrink:0"></span><span style="font:500 11px 'IBM Plex Mono';color:#c8d0da;width:76px">{{ s.name }}</span><span style="font:400 11px 'IBM Plex Mono';color:#606c7c">{{ s.hex }}</span></div>
+            </sc-for>
+          </div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:8px">
+          <span style="font:600 11px 'IBM Plex Mono';color:#606c7c;letter-spacing:.08em">ACCENTS — CORAL IS THE ONLY INTERACTIVE COLOR</span>
+          <sc-for list="{{ accents }}" as="s" hint-placeholder-count="4">
+            <div style="display:flex;align-items:center;gap:10px"><span style="width:26px;height:26px;border-radius:6px;background:{{ s.hex }};flex-shrink:0"></span><span style="font:500 11px 'IBM Plex Mono';color:#c8d0da;width:150px">{{ s.name }}</span><span style="font:400 11px 'IBM Plex Mono';color:#7d838d">{{ s.role }}</span></div>
+          </sc-for>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:6px">
+          <span style="font:600 11px 'IBM Plex Mono';color:#606c7c;letter-spacing:.08em">SHAPE · DENSITY · ICONS</span>
+          <span style="font:400 11.5px/1.8 'IBM Plex Mono';color:#7d838d">radii 4 / 6 / 8 (cards) / 999 (chips) · spacing on a 4px base, cards 14px padding · icons: 1.5–2px stroke outline set (Feather-style) + Simple Icons OS glyphs (CC0), all currentColor · no shadows inside surfaces — borders carry hierarchy, hover lifts border to coral</span>
+        </div>
+      </div>
+    </div>
+
+    <div id="1i" style="display:flex;flex-direction:column;gap:10px">
+      <div style="display:flex;align-items:baseline;gap:10px"><a href="#1i" style="font:600 11px 'IBM Plex Mono';background:#ff6047;color:#fff;padding:2px 8px;border-radius:999px;text-decoration:none">1i</a><span style="font:600 13px 'IBM Plex Sans';color:#e8eaee">Component inventory + responsive contract</span></div>
+      <div style="width:600px;background:#171a20;border:1px solid #2a2e35;border-radius:12px;padding:24px 28px;display:flex;flex-direction:column;gap:14px;font-family:'IBM Plex Sans',sans-serif">
+        <sc-for list="{{ inventory }}" as="c" hint-placeholder-count="12">
+          <div style="display:flex;gap:14px;align-items:baseline;border-bottom:1px solid #22262e;padding-bottom:10px">
+            <span style="font:600 12px 'IBM Plex Mono';color:#ff8570;width:150px;flex-shrink:0">{{ c.name }}</span>
+            <span style="font:400 12px/1.65 'IBM Plex Sans';color:#9aa5b3;text-wrap:pretty">{{ c.note }}</span>
+          </div>
+        </sc-for>
+        <span style="font:400 11.5px/1.8 'IBM Plex Mono';color:#7d838d">breakpoints — ≥1200: detail rail right (300px) · 640–1200: rail becomes 2-col band above README, catalog grid 2-col · &lt;640: everything single column, chips scroll, search sticky under header · all runtime data = same-origin JSON; logo ext guess svg→png→placeholder kept from current cas.ts</span>
+      </div>
+    </div>
+  </div>
+</section>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;showAnnotations&quot;: {&quot;editor&quot;: &quot;boolean&quot;, &quot;default&quot;: true, &quot;tsType&quot;: &quot;boolean&quot;, &quot;section&quot;: &quot;Presentation&quot;}, &quot;menuMock&quot;: {&quot;editor&quot;: &quot;boolean&quot;, &quot;default&quot;: true, &quot;tsType&quot;: &quot;boolean&quot;, &quot;section&quot;: &quot;Presentation&quot;}}">
+class Component extends DCLogic {
+  renderVals() {
+    const E = React.createElement;
+    const TUX = 'M12.504 0c-.155 0-.315.008-.48.021-4.226.333-3.105 4.807-3.17 6.298-.076 1.092-.3 1.953-1.05 3.02-.885 1.051-2.127 2.75-2.716 4.521-.278.832-.41 1.684-.287 2.489a.424.424 0 00-.11.135c-.26.268-.45.6-.663.839-.199.199-.485.267-.797.4-.313.136-.658.269-.864.68-.09.189-.136.394-.132.602 0 .199.027.4.055.536.058.399.116.728.04.97-.249.68-.28 1.145-.106 1.484.174.334.535.47.94.601.81.2 1.91.135 2.774.6.926.466 1.866.67 2.616.47.526-.116.97-.464 1.208-.946.587-.003 1.23-.269 2.26-.334.699-.058 1.574.267 2.577.2.025.134.063.198.114.333l.003.003c.391.778 1.113 1.132 1.884 1.071.771-.06 1.592-.536 2.257-1.306.631-.765 1.683-1.084 2.378-1.503.348-.199.629-.469.649-.853.023-.4-.2-.811-.714-1.376v-.097l-.003-.003c-.17-.2-.25-.535-.338-.926-.085-.401-.182-.786-.492-1.046h-.003c-.059-.054-.123-.067-.188-.135a.357.357 0 00-.19-.064c.431-1.278.264-2.55-.173-3.694-.533-1.41-1.465-2.638-2.175-3.483-.796-1.005-1.576-1.957-1.56-3.368.026-2.152.236-6.133-3.544-6.139zm.529 3.405h.013c.213 0 .396.062.584.198.19.135.33.332.438.533.105.259.158.459.166.724 0-.02.006-.04.006-.06v.105a.086.086 0 01-.004-.021l-.004-.024a1.807 1.807 0 01-.15.706.953.953 0 01-.213.335.71.71 0 00-.088-.042c-.104-.045-.198-.064-.284-.133a1.312 1.312 0 00-.22-.066c.05-.06.146-.133.183-.198.053-.128.082-.264.088-.402v-.02a1.21 1.21 0 00-.061-.4c-.045-.134-.101-.2-.183-.333-.084-.066-.167-.132-.267-.132h-.016c-.093 0-.176.03-.262.132a.8.8 0 00-.205.334 1.18 1.18 0 00-.09.4v.019c.002.089.008.179.02.267-.193-.067-.438-.135-.607-.202a1.635 1.635 0 01-.018-.2v-.02a1.772 1.772 0 01.15-.768c.082-.22.232-.406.43-.533a.985.985 0 01.594-.2zm-2.962.059h.036c.142 0 .27.048.399.135.146.129.264.288.344.465.09.199.14.4.153.667v.004c.007.134.006.2-.002.266v.08c-.03.007-.056.018-.083.024-.152.055-.274.135-.393.2.012-.09.013-.18.003-.267v-.015c-.012-.133-.04-.2-.082-.333a.613.613 0 00-.166-.267.248.248 0 00-.183-.064h-.021c-.071.006-.13.04-.186.132a.552.552 0 00-.12.27.944.944 0 00-.023.33v.015c.012.135.037.2.08.334.046.134.098.2.166.268.01.009.02.018.034.024-.07.057-.117.07-.176.136a.304.304 0 01-.131.068 2.62 2.62 0 01-.275-.402 1.772 1.772 0 01-.155-.667 1.759 1.759 0 01.08-.668 1.43 1.43 0 01.283-.535c.128-.133.26-.2.418-.2zm1.37 1.706c.332 0 .733.065 1.216.399.293.2.523.269 1.052.468h.003c.255.136.405.266.478.399v-.131a.571.571 0 01.016.47c-.123.31-.516.643-1.063.842v.002c-.268.135-.501.333-.775.465-.276.135-.588.292-1.012.267a1.139 1.139 0 01-.448-.067 3.566 3.566 0 01-.322-.198c-.195-.135-.363-.332-.612-.465v-.005h-.005c-.4-.246-.616-.512-.686-.71-.07-.268-.005-.47.193-.6.224-.135.38-.271.483-.336.104-.074.143-.102.176-.131h.002v-.003c.169-.202.436-.47.839-.601.139-.036.294-.065.466-.065zm2.8 2.142c.358 1.417 1.196 3.475 1.735 4.473.286.534.855 1.659 1.102 3.024.156-.005.33.018.513.064.646-1.671-.546-3.467-1.089-3.966-.22-.2-.232-.335-.123-.335.59.534 1.365 1.572 1.646 2.757.13.535.16 1.104.021 1.67.067.028.135.06.205.067 1.032.534 1.413.938 1.23 1.537v-.043c-.06-.003-.12 0-.18 0h-.016c.151-.467-.182-.825-1.065-1.224-.915-.4-1.646-.336-1.77.465-.008.043-.013.066-.018.135-.068.023-.139.053-.209.064-.43.268-.662.669-.793 1.187-.13.533-.17 1.156-.205 1.869v.003c-.02.334-.17.838-.319 1.35-1.5 1.072-3.58 1.538-5.348.334a2.645 2.645 0 00-.402-.533 1.45 1.45 0 00-.275-.333c.182 0 .338-.03.465-.067a.615.615 0 00.314-.334c.108-.267 0-.697-.345-1.163-.345-.467-.931-.995-1.788-1.521-.63-.4-.986-.87-1.15-1.396-.165-.534-.143-1.085-.015-1.645.245-1.07.873-2.11 1.274-2.763.107-.065.037.135-.408.974-.396.751-1.14 2.497-.122 3.854a8.123 8.123 0 01.647-2.876c.564-1.278 1.743-3.504 1.836-5.268.048.036.217.135.289.202.218.133.38.333.59.465.21.201.477.335.876.335.039.003.075.006.11.006.412 0 .73-.134.997-.268.29-.134.52-.334.74-.4h.005c.467-.135.835-.402 1.044-.7zm2.185 8.958c.037.6.343 1.245.882 1.377.588.134 1.434-.333 1.791-.765l.211-.01c.315-.007.577.01.847.268l.003.003c.208.199.305.53.391.876.085.4.154.78.409 1.066.486.527.645.906.636 1.14l.003-.007v.018l-.003-.012c-.015.262-.185.396-.498.595-.63.401-1.746.712-2.457 1.57-.618.737-1.37 1.14-2.036 1.191-.664.053-1.237-.2-1.574-.898l-.005-.003c-.21-.4-.12-1.025.056-1.69.176-.668.428-1.344.463-1.897.037-.714.076-1.335.195-1.814.12-.465.308-.797.641-.984l.045-.022zm-10.814.049h.01c.053 0 .105.005.157.014.376.055.706.333 1.023.752l.91 1.664.003.003c.243.533.754 1.064 1.189 1.637.434.598.77 1.131.729 1.57v.006c-.057.744-.48 1.148-1.125 1.294-.645.135-1.52.002-2.395-.464-.968-.536-2.118-.469-2.857-.602-.369-.066-.61-.2-.723-.4-.11-.2-.113-.602.123-1.23v-.004l.002-.003c.117-.334.03-.752-.027-1.118-.055-.401-.083-.71.043-.94.16-.334.396-.4.69-.533.294-.135.64-.202.915-.47h.002v-.002c.256-.268.445-.601.668-.838.19-.201.38-.336.663-.336zm7.159-9.074c-.435.201-.945.535-1.488.535-.542 0-.97-.267-1.28-.466-.154-.134-.28-.268-.373-.335-.164-.134-.144-.333-.074-.333.109.016.129.134.199.2.096.066.215.2.36.333.292.2.68.467 1.167.467.485 0 1.053-.267 1.398-.466.195-.135.445-.334.648-.467.156-.136.149-.267.279-.267.128.016.034.134-.147.332a8.097 8.097 0 01-.69.468zm-1.082-1.583V5.64c-.006-.02.013-.042.029-.05.074-.043.18-.027.26.004.063 0 .16.067.15.135-.006.049-.085.066-.135.066-.055 0-.092-.043-.141-.068-.052-.018-.146-.008-.163-.065zm-.551 0c-.02.058-.113.049-.166.066-.047.025-.086.068-.14.068-.05 0-.13-.02-.136-.068-.01-.066.088-.133.15-.133.08-.031.184-.047.259-.005.019.009.036.03.03.05v.02h.003z';
+    const APPLE = 'M12.152 6.896c-.948 0-2.415-1.078-3.96-1.04-2.04.027-3.91 1.183-4.961 3.014-2.117 3.675-.546 9.103 1.519 12.09 1.013 1.454 2.208 3.09 3.792 3.039 1.52-.065 2.09-.987 3.935-.987 1.831 0 2.35.987 3.96.948 1.637-.026 2.676-1.48 3.676-2.948 1.156-1.688 1.636-3.325 1.662-3.415-.039-.013-3.182-1.221-3.22-4.857-.026-3.04 2.48-4.494 2.597-4.559-1.429-2.09-3.623-2.324-4.39-2.376-2-.156-3.675 1.09-4.61 1.09zM15.53 3.83c.843-1.012 1.4-2.427 1.245-3.83-1.207.052-2.662.805-3.532 1.818-.78.896-1.454 2.338-1.273 3.714 1.338.104 2.715-.688 3.559-1.701';
+    const fillIcon = (d, s, key) => E('svg', { key, width: s, height: s, viewBox: '0 0 24 24', style: { flexShrink: 0, display: 'block' } }, E('path', { d, fill: 'currentColor' }));
+    const winIcon = (s, key) => E('svg', { key, width: s, height: s, viewBox: '0 0 24 24', style: { flexShrink: 0, display: 'block' } },
+      [[3, 3], [13, 3], [3, 13], [13, 13]].map(([x, y], i) => E('rect', { key: i, x, y, width: 8, height: 8, fill: 'currentColor' })));
+    const osIcon = (o, s, key) => o === 'linux' ? fillIcon(TUX, s, key) : o === 'darwin' ? fillIcon(APPLE, s, key) : winIcon(s, key);
+    const iconRow = codes => E('span', { style: { display: 'inline-flex', gap: '7px', alignItems: 'center' } },
+      codes.map((o, i) => E('span', { key: i, title: o, style: { display: 'inline-flex' } }, osIcon(o, 13, o))));
+    const LT = ['#d84a34', '#0e9f6e', '#6f5bd0', '#9a6b13'];
+    const LB = ['rgba(255,96,71,.10)', 'rgba(14,159,110,.10)', 'rgba(111,91,208,.10)', 'rgba(250,184,51,.16)'];
+    const DT = ['#ff8570', '#3edea6', '#c0b3ff', '#fab833'];
+    const DB = ['rgba(255,96,71,.14)', 'rgba(62,222,166,.12)', 'rgba(192,179,255,.12)', 'rgba(250,184,51,.12)'];
+    const P = c => [...c].map(x => x === 'l' ? 'linux' : x === 'd' ? 'darwin' : 'windows');
+    const mk = (rows, dark) => rows.map(r => {
+      const [name, title, desc, kws, plat, ver, tags, ch, hue] = r;
+      return {
+        name, title, desc, kws, ver, tags: String(tags), icons: iconRow(P(plat)),
+        hasTile: !!ch, noTile: !ch, tileCh: ch || '',
+        tileBg: ch ? (dark ? DB : LB)[hue] : '', tileFg: ch ? (dark ? DT : LT)[hue] : ''
+      };
+    });
+    const LIGHT = [
+      ['kitware/cmake', 'CMake', 'Cross-platform build-system generator and toolchain orchestrator.', ['build', 'c++'], 'ldw', '3.31.7', 24, 'CM', 0],
+      ['astral-sh/uv', 'uv', 'Extremely fast Python package and project manager, written in Rust.', ['python', 'packaging'], 'ldw', '0.7.13', 38, 'uv', 1],
+      ['oven-sh/bun', 'Bun', 'Fast all-in-one JavaScript runtime, bundler and package manager.', ['javascript', 'runtime'], 'ld', '1.2.18', 41, 'B', 2],
+      ['cli/gh', 'GitHub CLI', 'GitHub on the command line — PRs, issues, releases, workflows.', ['git', 'cli'], 'ldw', '2.74.0', 30, 'gh', 3],
+      ['jqlang/jq', 'jq', 'Lightweight and flexible command-line JSON processor.', ['json', 'query'], 'ldw', '1.8.0', 9, 'jq', 0],
+      ['mikefarah/yq', 'yq', 'Portable command-line YAML, JSON, XML and TOML processor.', ['yaml', 'query'], 'ldw', '4.45.4', 22, 'yq', 1],
+      ['ziglang/zig', 'Zig', 'General-purpose programming language and cross-compilation toolchain.', ['compiler'], 'ldw', '0.14.1', 12, 'Z', 2],
+      ['koalaman/shellcheck', 'ShellCheck', 'Static analysis tool for shell scripts.', ['shell', 'lint'], 'ldw', '0.10.0', 8, null, 0],
+      ['sharkdp/hyperfine', 'hyperfine', 'Command-line benchmarking tool with statistical outlier detection.', ['benchmark', 'cli'], 'ldw', '1.19.0', 11, 'hf', 3],
+      ['neovim/neovim', 'Neovim', 'Hyperextensible Vim-based text editor.', ['editor', 'vim'], 'ldw', '0.11.2', 17, 'nv', 2],
+      ['helm/helm', 'Helm', 'The package manager for Kubernetes.', ['kubernetes', 'charts'], 'ldw', '3.18.3', 26, 'H', 1],
+      ['casey/just', 'just', 'Just a command runner — save and run project-specific recipes.', ['task-runner', 'make'], 'ldw', '1.40.0', 19, 'j', 0]
+    ];
+    const SHELL = [
+      ['fish-shell/fish', 'fish', 'Smart and user-friendly command line shell.', ['shell'], 'ld', '4.0.2', 13, 'f', 2],
+      ['nushell/nushell', 'Nushell', 'A new type of shell — structured data pipelines.', ['shell', 'data'], 'ldw', '0.105.1', 33, 'nu', 1],
+      ['koalaman/shellcheck', 'ShellCheck', 'Static analysis tool for shell scripts.', ['shell', 'lint'], 'ldw', '0.10.0', 8, null, 0],
+      ['direnv/direnv', 'direnv', 'Per-directory environment variable loader for your shell.', ['shell', 'env'], 'ld', '2.36.0', 15, null, 3],
+      ['elves/elvish', 'Elvish', 'Expressive programming language and versatile interactive shell.', ['shell'], 'ldw', '0.21.0', 10, 'e', 0]
+    ];
+    const detailPlatforms = [
+      { icon: osIcon('linux', 16, 'l'), label: 'Linux', arches: ['amd64', 'arm64'] },
+      { icon: osIcon('darwin', 16, 'd'), label: 'macOS', arches: ['amd64', 'arm64'] },
+      { icon: osIcon('windows', 16, 'w'), label: 'Windows', arches: ['amd64', 'arm64'] }
+    ];
+    const patches = [
+      { t: '3.30.5', color: 'var(--t2)', border: 'solid var(--line)', deco: 'none' },
+      { t: '3.30.4', color: 'var(--t2)', border: 'solid var(--line)', deco: 'none' },
+      { t: '3.30.3', color: 'var(--t2)', border: 'solid var(--line)', deco: 'none' },
+      { t: '3.30.2', color: 'var(--t3)', border: 'dashed rgba(250,184,51,.6)', deco: 'line-through' },
+      { t: '3.30.1', color: 'var(--t2)', border: 'solid var(--line)', deco: 'none' },
+      { t: '3.30.0', color: 'var(--t2)', border: 'solid var(--line)', deco: 'none' }
+    ];
+    return {
+      ann: this.props.showAnnotations ?? true,
+      menuMock: this.props.menuMock ?? true,
+      pkgsLight: mk(LIGHT, false),
+      pkgsShell: mk(SHELL, true),
+      pkgsMobile: mk(LIGHT.slice(0, 3), false),
+      osLinux: osIcon('linux', 13, 'cl'), osMac: osIcon('darwin', 13, 'cm'), osWin: winIcon(13, 'cw'),
+      kwChips: ['build', 'shell', 'javascript', 'python', 'kubernetes', 'editor', 'json', 'cli'],
+      kwChipsDark: ['build', 'javascript', 'python', 'kubernetes', 'editor'],
+      minors: [{ tag: '3.31', n: '3' }, { tag: '3.30', n: '6' }, { tag: '3.29', n: '3' }, { tag: '3.28', n: '5' }],
+      patches,
+      detailPlatforms,
+      swatchesLight: [
+        { name: 'bg', hex: '#f6f7f9' }, { name: 'surface', hex: '#ffffff' }, { name: 'surface-2', hex: '#eff2f5' },
+        { name: 'line', hex: '#e2e6ec' }, { name: 'text-1', hex: '#1b2129' }, { name: 'text-2', hex: '#4b5665' }, { name: 'text-3', hex: '#8a94a3' }
+      ],
+      swatchesDark: [
+        { name: 'bg', hex: '#0e1116' }, { name: 'surface', hex: '#151a22' }, { name: 'surface-2', hex: '#1c232d' },
+        { name: 'line', hex: '#252d39' }, { name: 'text-1', hex: '#e7ebf1' }, { name: 'text-2', hex: '#9aa5b3' }, { name: 'text-3', hex: '#606c7c' }
+      ],
+      accents: [
+        { name: 'coral #ff6047', hex: '#ff6047', role: 'brand · links · active states · focus — the only interactive color' },
+        { name: 'green 3edea6/0e9f6e', hex: '#3edea6', role: 'copied confirmation · “latest” health' },
+        { name: 'amber fab833/9a6b13', hex: '#fab833', role: 'disclaimers · yanked versions' },
+        { name: 'violet c0b3ff/6f5bd0', hex: '#c0b3ff', role: 'keyword chips — passive metadata only' }
+      ],
+      inventory: [
+        { name: 'SiteHeader', note: 'logo + index.ocx.sh wordmark, catalog/docs/github nav (mono), theme toggle. 54px, surface bg, 1px line.' },
+        { name: 'SearchInput', note: 'autofocus on “/” or ⌘K; debounced client-side filter over name/title/description/keywords; 44px tall.' },
+        { name: 'FilterChips', note: 'platform toggles (OS glyph + name), keyword chips from catalog union (top-N by count, +N expands), status. Active = coral tint + ✕.' },
+        { name: 'ResultMeta', note: '“N packages” or “n of N” + active filter echo + clear-all link.' },
+        { name: 'PackageCard', note: 'tile (logo | monogram | cube placeholder) · title + version · full name mono · 2-line description · keyword chips · OS glyphs + tag count · install row (click = copy, stops navigation).' },
+        { name: 'InstallRow', note: '$-prefixed mono command, copy icon, truncates; green check state for 1.5s after copy.' },
+        { name: 'TagBadge', note: 'click = copy ocx.sh/ns/pkg:tag; right-click context menu: copy identifier / tag / install project / install global / inspect. Yanked = strikethrough + dashed amber.' },
+        { name: 'VersionTree', note: 'variant rows → alias chain (equal-digest tags as one segmented control, latest highlighted) → major groups → minor chips with ·N patch popovers. Yank reasons inline.' },
+        { name: 'PlatformMatrix', note: 'OS row = glyph + name + arch chips; per-version matrix on tag hover from observation data.' },
+        { name: 'DisclaimerBanner', note: 'amber; MANDATORY whenever upstream.disclaimer present; links upstream repo.' },
+        { name: 'DeprecationBanner', note: 'coral; renders deprecated_message; DEPRECATED badge in identity; latest excluded.' },
+        { name: 'ReadmePane', note: 'markdown from CAS URL; dark code blocks in both themes; CAS provenance footer.' },
+        { name: 'MetaRail', note: 'install card, platforms card, metadata card (registry, owners, upstream, latest, tag count).' },
+        { name: 'EmptyState', note: 'two variants: no-data (logo, honest copy, request/contribute CTAs) and no-match (echo query, clear, request escalation).' },
+        { name: 'SkeletonGrid', note: 'pulsing card skeletons during runtime fetch; grid dimensions identical to loaded state.' },
+        { name: 'DocsSidebar', note: 'Diátaxis groups, mono uppercase labels, coral active item; maps onto VitePress theme vars.' }
+      ]
+    };
+  }
+}
+</script>
+</body>
+</html>
