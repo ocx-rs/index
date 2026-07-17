@@ -1,28 +1,26 @@
 import type { Theme } from 'vitepress'
-import DefaultTheme from 'vitepress/theme'
-import HomeLayout from './HomeLayout.vue'
-import './custom.css'
 
-// Trimmed to exactly the catalog component set (adr_catalog_docs_colocation.md
-// "site/ layout") — ocx-sh/ocx's website theme ships ~20 components
-// (roadmap pages, terminal recordings, dependency explorer, etc.); none of
-// that applies to a package index.
-import CopySnippet from './components/CopySnippet.vue'
-import PackageCatalog from './components/PackageCatalog.vue'
-import PackageDetail from './components/PackageDetail.vue'
-import PlatformIcons from './components/PlatformIcons.vue'
-import TagBadge from './components/TagBadge.vue'
-import VersionTree from './components/VersionTree.vue'
+// Self-hosted IBM Plex — design mock 1h: sans carries titles/prose (needs
+// the full 400-700 range), mono carries every identifier/version/label/
+// command and is NEVER bold display text, so its heaviest shipped weight
+// stops at 600 (never import ibm-plex-mono/700.css).
+import '@fontsource/ibm-plex-sans/400.css'
+import '@fontsource/ibm-plex-sans/500.css'
+import '@fontsource/ibm-plex-sans/600.css'
+import '@fontsource/ibm-plex-sans/700.css'
+import '@fontsource/ibm-plex-mono/400.css'
+import '@fontsource/ibm-plex-mono/500.css'
+import '@fontsource/ibm-plex-mono/600.css'
 
+import './styles/base.css'
+
+import Layout from './Layout.vue'
+
+// Blank custom theme (no `extends: DefaultTheme`) — core still supplies the
+// pre-hydration `appearance` dark-class script, writable `isDark`,
+// `page.headers`, free-form `themeConfig`, `<Content/>` and dynamic-route
+// `params`; everything visual is this theme's own (Layout.vue + styles/).
 export default {
-  extends: DefaultTheme,
-  Layout: HomeLayout,
-  enhanceApp({ app }) {
-    app.component('CopySnippet', CopySnippet)
-    app.component('PackageCatalog', PackageCatalog)
-    app.component('PackageDetail', PackageDetail)
-    app.component('PlatformIcons', PlatformIcons)
-    app.component('TagBadge', TagBadge)
-    app.component('VersionTree', VersionTree)
-  },
+  Layout,
+  enhanceApp() {},
 } satisfies Theme
