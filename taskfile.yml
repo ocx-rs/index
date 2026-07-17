@@ -75,10 +75,14 @@ tasks:
   site:build:
     desc: >-
       VitePress catalog+docs site build (exactly ci.yml's site-build job).
-      Builds against no runtime /data/catalog and no generated
-      site/src/<ns>/<pkg>.md wrapper pages — the catalog/docs components must
-      render a degraded/empty state, never fail the build, when that data is
-      absent (see site/README.md).
+      Dynamic routes (site/src/[ns]/[pkg].paths.ts) read the committed
+      p/*/*.json tree directly at build time -- no bot-generated wrapper
+      Markdown involved -- and degrade to zero package detail pages when p/
+      is empty. Runs before render:build ever writes
+      /data/catalog/catalog.json, so the catalog/search UI has no runtime
+      /data/catalog to read yet either; both must render a degraded/empty
+      state, never fail the build, when that data is absent (see
+      site/README.md).
     dir: site
     cmds:
       - bun install --frozen-lockfile

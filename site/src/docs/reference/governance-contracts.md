@@ -17,7 +17,7 @@ locked-observation wire format. Design authority:
 | G-03 | `repository` host allowlist, checked before any network call | Kept — SSRF-ordering guard |
 | G-04 | New entry file → `new-package` label, mandatory human review, never auto-merge | Kept — namespace-fit judgment is [Namespace Policy](./namespace-policy)'s contract; this gate is the mechanical enforcement |
 | G-05 | Green refresh → auto-merge eligible; yank/deprecate/transfer/owners/pointer change → human review always | Kept, key set expanded — human-review-required keys are `repository`, `owners`, `status`, `deprecated_message`, `superseded_by`, and any mutation of an existing tag row's `yanked` field |
-| G-06 | Render: source tree → deploy tree | Reinterpreted — no longer an identity copy; reachability-filtered CAS copy, `config.json` emission, `/data/catalog/**` emission, per-package wrapper-page emission |
+| G-06 | Render: source tree → deploy tree | Reinterpreted — no longer an identity copy; reachability-filtered CAS copy, `config.json` emission, `/c/index.json` emission, `/data/catalog/**` emission. Per-package detail pages are VitePress dynamic routes that glob the committed `p/*/*.json` tree directly at build time — not a bot-emitted wrapper-page tree |
 | G-07 | Deploy is idempotent; no-op on an unchanged tree | Kept |
 | G-08 | `repository_dispatch` payload validated via env-var indirection, regex-checked before use | Kept, regex reinterpreted — exact 2-segment package-id form (see [Namespace Policy](./namespace-policy)) |
 | G-09 | Field provenance partition: registry-derived vs human-governed fields never cross-contaminate | Kept, field set updated — see [Entry Schema](./entry-schema#field-provenance) |
