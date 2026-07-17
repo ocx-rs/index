@@ -2,9 +2,8 @@
 #
 # Repo gate contract. `verify` == the exact CI job set in
 # .github/workflows/ci.yml (schema-validate, bot-lint, bot-test, bot-audit,
-# workflows-lint, site-build), plus placeholder:check (local-only, public/
-# retires in Phase 3). No drift between this file and ci.yml — see
-# .claude/state/plans/plan_index_v1.md WP1-C and
+# workflows-lint, site-build, render-check). No drift between this file and
+# ci.yml — see .claude/state/plans/plan_index_v1.md WP1-C/WP3-A and
 # .claude/artifacts/adr_index_bot_and_workflow_security.md.
 
 version: '3'
@@ -13,6 +12,9 @@ includes:
   bot:
     taskfile: ./bot/taskfile.yml
     dir: ./bot
+
+vars:
+  RENDER_OUT: site/.vitepress/dist
 
 tasks:
   default:
@@ -63,18 +65,12 @@ tasks:
 
   workflows:lint:
     desc: >-
-      zizmor security lint (exactly ci.yml's workflows-lint job), scoped to
-      the workflows/actions that must stay clean today. Excludes deploy.yml
-      (legacy unpinned actions, retired by Phase 3's render-deploy.yml —
-      widen to the whole directory once that lands). validate.yml/
-      announce.yml/reconcile.yml (WP2-S/T/U) added once they landed clean.
+      zizmor security lint (exactly ci.yml's workflows-lint job) across the
+      whole workflows/actions tree — deploy.yml (the last unpinned-actions
+      holdout) retired by Phase 3's render-deploy.yml, so the scope is the
+      full .github/ directory, not a file allowlist.
     cmds:
-      - uvx zizmor --min-severity medium .github/workflows/ci.yml .github/workflows/dependency-review.yml .github/workflows/mutmut.yml .github/workflows/validate.yml .github/workflows/announce.yml .github/workflows/reconcile.yml .github/actions/setup-bot/action.yml
-
-  placeholder:check:
-    desc: JSON well-formedness of public/ (bootstrap placeholder — retired Phase 3, not a CI job)
-    cmds:
-      - find public -name '*.json' -print0 | xargs -0 -n1 jq empty
+      - uvx zizmor --min-severity medium .github/
 
   site:build:
     desc: >-
@@ -88,8 +84,74 @@ tasks:
       - bun install --frozen-lockfile
       - bun run build
 
+  render:build:
+    desc: >-
+      Full render pipeline against the committed p/ source tree, sandwiching
+      the VitePress build per the fixed build order (ADR
+      adr_catalog_docs_colocation.md "Build pipeline order", plan Phase 3
+      WP3-A): (1) `indexbot render --site-dist` emits per-package wrapper
+      Markdown into site/src/** — VitePress compile input, must exist before
+      the build; (2) `bun run build` (via site:build) compiles
+      {{.RENDER_OUT}}, wiping it clean (`emptyOutDir: true`); (3) `indexbot
+      render --out` emits config.json + the /p/** wire mirror +
+      /data/catalog/** directly into {{.RENDER_OUT}}, only AFTER step 2 —
+      reversing steps 2 and 3 silently deletes the wire JSON on the next
+      deploy. With no p/ tree yet (pre-seed), step 1 emits no wrapper pages
+      and step 3 still emits config.json + an empty
+      /data/catalog/packages.json — no separate p/-absent code path needed.
+    cmds:
+      - uv run --project bot -- indexbot render --index-dir "" --site-dist site/src
+      - task: site:build
+      - uv run --project bot -- indexbot render --index-dir "" --out {{.RENDER_OUT}}
+
+  schema:validate:rendered:
+    desc: >-
+      check-jsonschema on render:build's output tree ({{.RENDER_OUT}}):
+      config.json against schema/config.schema.json; every rendered
+      p/<ns>/<pkg>.json root against schema/root.schema.json; every rendered
+      p/<ns>/<pkg>/o/sha256/<hex>.json CAS object against
+      schema/observation-object.schema.json. Pre-seed (no p/ roots rendered
+      yet) the latter two `find -exec` calls simply match (and invoke) zero
+      files — config.json is still validated. `-exec … +` (not a `read -d
+      ''` loop) because Task's own script interpreter isn't bash and
+      doesn't support the GNU-only `read -d` flag; `find -exec +` is POSIX
+      and file-safe with no shell involved in the match/dispatch step. The
+      roots glob carries `-mindepth 3 -maxdepth 3` (WP3-C E2E fix): GNU
+      `find -path` has no FNM_PATHNAME semantics, so a bare `*` in `-path`
+      matches `/` too — `$out/p/*/*.json` alone also matches
+      `$out/p/<ns>/<pkg>/o/sha256/<hex>.json` (a CAS observation object,
+      six path components below `$out`, vs. a root's three) and fed CAS
+      objects into the root-schema check, failing every package with any
+      CAS object. The depth bound anchors it to exactly `p/<ns>/<pkg>.json`;
+      searching from `$out` (never `$out/p` directly) keeps the pre-seed
+      zero-match case working, since `$out` always exists.
+    set: [e, u, pipefail]
+    cmds:
+      - |
+        out="{{.RENDER_OUT}}"
+
+        echo "== $out/config.json vs schema/config.schema.json =="
+        uvx check-jsonschema --schemafile schema/config.schema.json "$out/config.json"
+
+        echo "== rendered package roots vs schema/root.schema.json =="
+        find "$out" -mindepth 3 -maxdepth 3 -path "$out/p/*/*.json" -exec uvx check-jsonschema --schemafile schema/root.schema.json {} +
+
+        echo "== rendered observation objects vs schema/observation-object.schema.json =="
+        find "$out" -path "$out/p/*/*/o/sha256/*.json" -exec uvx check-jsonschema --schemafile schema/observation-object.schema.json {} +
+
+        echo "schema:validate:rendered: OK"
+
+  smoke:test:
+    desc: >-
+      scripts/smoke-test.sh against a live deploy (default
+      https://index.ocx.sh) — hits the network and asserts on deployed
+      state, NOT part of verify. Pass extra args after `--`, e.g.
+      `task smoke:test -- https://index.ocx.sh --allow-empty`.
+    cmds:
+      - scripts/smoke-test.sh {{.CLI_ARGS}}
+
   verify:
-    desc: Full gate — exactly the CI job set, plus the local-only placeholder:check
+    desc: Full gate — exactly the CI job set (schema-validate, bot-lint, bot-test, bot-audit, workflows-lint, site-build, render-check)
     cmds:
       - task: schema:validate
       - task: bot:lint
@@ -97,4 +159,5 @@ tasks:
       - task: bot:audit
       - task: workflows:lint
       - task: site:build
-      - task: placeholder:check
+      - task: render:build
+      - task: schema:validate:rendered

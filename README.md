@@ -31,10 +31,12 @@ built with [VitePress](https://vitepress.dev/)).
 
 ## Repo state
 
-`public/` is a temporary placeholder (`config.json` + `index.html`) deployed
-verbatim to [Cloudflare Pages](https://pages.cloudflare.com/) by
-`.github/workflows/deploy.yml`. It is retired once the render pipeline lands
-and replaces it with output generated from `p/`.
+`.github/workflows/render-deploy.yml` renders `p/` (via `indexbot render` +
+the VitePress build) into `site/.vitepress/dist` and deploys that tree to
+[Cloudflare Pages](https://pages.cloudflare.com/), serving `index.ocx.sh`.
+This replaces the earlier `public/` placeholder and `deploy.yml`, both
+retired. `p/` is still empty pending Phase 4 seed data, so the deployed
+index currently exposes `config.json` only.
 
 ## Operating rules
 
