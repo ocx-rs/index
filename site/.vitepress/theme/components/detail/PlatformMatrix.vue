@@ -92,7 +92,11 @@ const groups = computed<PlatformGroup[]>(() => {
    before arm64, stable position whether or not a given OS has that arch. */
 .platform-matrix {
   display: grid;
-  grid-template-columns: 18px 70px repeat(var(--arch-cols), auto);
+  /* 1fr label column absorbs the slack so the arch-badge block sits flush
+     against the card's right edge; each arch track is minmax'd — a shared
+     minimum keeps amd64/arm64 cells uniform, an unusually long arch name
+     can still widen its own track instead of clipping. */
+  grid-template-columns: 18px 1fr repeat(var(--arch-cols), minmax(3.5rem, auto));
   align-items: center;
   row-gap: 10px;
   column-gap: 10px;
@@ -117,10 +121,11 @@ const groups = computed<PlatformGroup[]>(() => {
 
 .platform-arch-cell {
   display: flex;
-  justify-content: flex-start;
 }
 
 .platform-arch {
+  flex: 1;
+  text-align: center;
   font-family: var(--font-mono);
   font-size: var(--text-2xs);
   font-weight: 500;

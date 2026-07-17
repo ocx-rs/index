@@ -1,9 +1,10 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue'
-import { useCopyState } from '../../composables/useCopyState'
+import { useClipboard } from '@vueuse/core'
 import { safeHref } from '../../utils/safeHref'
 import PlatformMatrix from './PlatformMatrix.vue'
 import CopyIcon from '../shared/CopyIcon.vue'
+import CopyContextMenu, { buildTagCopyActions, type CopyAction } from '../shared/CopyContextMenu.vue'
 import type { PackageRoot } from '../../composables/usePackageRoot'
 import type { ObservationObject } from '../../composables/useObservation'
 
@@ -28,17 +29,57 @@ const props = defineProps<{
 const canToggle = computed(() => props.primaryTag === 'latest' && !!props.latestVersionLabel)
 const mode = ref<'latest' | 'pinned'>('latest')
 
-const installCommand = computed(() => {
-  if (canToggle.value) {
-    return mode.value === 'latest'
-      ? `ocx add ${props.qualifiedName}`
-      : `ocx add ${props.qualifiedName}:${props.latestVersionLabel}`
-  }
-  if (props.primaryTag) return `ocx add ${props.qualifiedName}:${props.primaryTag}`
-  return null
+// Context-menu target = the same tag the card currently denotes.
+const effectiveTag = computed(() => {
+  if (canToggle.value) return mode.value === 'pinned' ? props.latestVersionLabel : 'latest'
+  return props.primaryTag
 })
 
-const { copied, copyText } = useCopyState(1500)
+const menuActions = computed<CopyAction[]>(() =>
+  effectiveTag.value ? buildTagCopyActions(props.qualifiedName, effectiveTag.value) : [],
+)
+
+// What the install commands operate on: bare qualified name in "latest"
+// mode (matches `ocx add <name>` semantics), `name:tag` otherwise.
+const installTarget = computed(() => {
+  if (canToggle.value && mode.value === 'latest') return props.qualifiedName
+  return effectiveTag.value ? `${props.qualifiedName}:${effectiveTag.value}` : null
+})
+
+interface InstallRowDef {
+  key: 'local' | 'global' | 'exec' | 'install'
+  icon: InstallRowDef['key']
+  title: string
+  command: string
+}
+
+// One row per install flavor (icon column | command bar) — owner spec:
+// grid, not a toggle. Icon meanings match CopyContextMenu's action icons.
+const installRows = computed<InstallRowDef[]>(() => {
+  const target = installTarget.value
+  if (!target) return []
+  return [
+    { key: 'local', icon: 'local', title: 'Add to project', command: `ocx add ${target}` },
+    { key: 'global', icon: 'global', title: 'Add globally', command: `ocx --global add ${target}` },
+    { key: 'exec', icon: 'exec', title: 'Run without installing', command: `ocx package exec ${target}` },
+    { key: 'install', icon: 'install', title: 'Install package', command: `ocx package install ${target}` },
+  ]
+})
+
+// Per-row copied feedback — a single shared flag would flash every bar at
+// once, so track which row copied last.
+const { copy: clipboardCopy } = useClipboard()
+const copiedKey = ref<string | null>(null)
+let copiedTimer: ReturnType<typeof setTimeout> | null = null
+
+async function copyRow(key: string, text: string) {
+  await clipboardCopy(text)
+  copiedKey.value = key
+  if (copiedTimer) clearTimeout(copiedTimer)
+  copiedTimer = setTimeout(() => {
+    copiedKey.value = null
+  }, 1500)
+}
 
 const owners = computed(() => props.root.owners)
 
@@ -55,21 +96,34 @@ const safeUpstreamUrl = computed(() => safeHref(props.root.upstream?.repository_
         <span class="rail-heading">INSTALL</span>
       </div>
       <div class="rail-card">
-        <div v-if="installCommand" class="install-toggle-wrap">
+        <div v-if="installRows.length" class="install-toggle-wrap">
           <span v-if="canToggle" class="install-toggle">
             <button type="button" :class="{ active: mode === 'latest' }" @click="mode = 'latest'">latest</button>
             <button type="button" :class="{ active: mode === 'pinned' }" @click="mode = 'pinned'">pinned :{{ latestVersionLabel }}</button>
           </span>
-          <button
-            type="button"
-            class="install-command"
-            :class="{ copied, deemphasized: root.status === 'deprecated' }"
-            @click="copyText(installCommand)"
-          >
-            <span class="install-prefix">$</span>
-            <span class="install-cmd">{{ installCommand }}</span>
-            <CopyIcon :copied="copied" />
-          </button>
+          <div class="install-grid">
+            <template v-for="row in installRows" :key="row.key">
+              <span class="install-icon" :title="row.title">
+                <svg v-if="row.icon === 'local'" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z" /></svg>
+                <svg v-else-if="row.icon === 'global'" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10" /><line x1="2" y1="12" x2="22" y2="12" /><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" /></svg>
+                <svg v-else-if="row.icon === 'exec'" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3" /></svg>
+                <svg v-else width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /><polyline points="7 10 12 15 17 10" /><line x1="12" y1="15" x2="12" y2="3" /></svg>
+              </span>
+              <CopyContextMenu :actions="menuActions" :copy-text="text => copyRow(row.key, text)">
+                <button
+                  type="button"
+                  class="install-command"
+                  :class="{ copied: copiedKey === row.key, deemphasized: root.status === 'deprecated' }"
+                  :title="row.title"
+                  @click="copyRow(row.key, row.command)"
+                >
+                  <span class="install-prefix">$</span>
+                  <span class="install-cmd">{{ row.command }}</span>
+                  <CopyIcon :copied="copiedKey === row.key" />
+                </button>
+              </CopyContextMenu>
+            </template>
+          </div>
         </div>
         <p v-else class="rail-empty">No installable version.</p>
       </div>
@@ -172,7 +226,9 @@ const safeUpstreamUrl = computed(() => safeHref(props.root.upstream?.repository_
 .install-toggle-wrap {
   display: flex;
   flex-direction: column;
-  gap: 9px;
+  /* Matches .rail-card's 14px top padding — toggle sits as far from the
+     grid below as from the card border above. */
+  gap: 14px;
 }
 
 .install-toggle {
@@ -181,6 +237,7 @@ const safeUpstreamUrl = computed(() => safeHref(props.root.upstream?.repository_
   border-radius: var(--radius-md);
   overflow: hidden;
   width: fit-content;
+  align-self: center;
 }
 
 .install-toggle button {
@@ -201,6 +258,29 @@ const safeUpstreamUrl = computed(() => safeHref(props.root.upstream?.repository_
 .install-toggle button.active {
   color: var(--c-accent);
   background: color-mix(in srgb, var(--c-accent) 8%, transparent);
+}
+
+.install-grid {
+  display: grid;
+  /* Icon column | command bar. CopyContextMenu's trigger is renderless
+     (`as-child`), so the slotted .install-command is the grid item itself.
+     Column gap matches .rail-card's 16px horizontal padding so the icon
+     sits visually centered between the card's left border and the bar. */
+  grid-template-columns: auto 1fr;
+  gap: 6px 16px;
+  align-items: stretch;
+}
+
+.install-icon {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  color: var(--c-text-3);
+}
+
+.install-grid .install-command {
+  width: auto;
+  min-width: 0;
 }
 
 .install-command {

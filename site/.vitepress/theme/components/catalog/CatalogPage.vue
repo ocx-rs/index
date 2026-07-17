@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
+import { computed, onMounted, onUnmounted, ref } from 'vue'
 import { useCatalog } from '../../composables/useCatalog'
 import { filterPackages } from '../../utils/filterPackages'
 import { isEditableTarget } from '../../utils/dom'
@@ -41,16 +41,11 @@ const filtered = computed(() =>
   }),
 )
 
-// Roving-tabindex grid nav (WAI-ARIA APG "grid" pattern): exactly one card
-// is a Tab stop at a time (index into `filtered`); arrow keys move it,
-// `PackageCard`'s own `<a>` picks up `tabindex` as a plain fallthrough
-// attribute (not declared as a prop there — no changes needed in
-// PackageCard.vue/CatalogGrid.vue to wire this). Resets to the first card
-// whenever the filtered set changes so a fresh Tab from the search bar
-// always lands on card 0, never a stale arrow-nav position.
-const activeCardIndex = ref(0)
-watch(filtered, () => { activeCardIndex.value = 0 })
-
+// Sequential tab order (owner spec, revising the earlier roving-tabindex
+// pass): EVERY card is a natural Tab stop (they're anchors — no tabindex
+// needed), so Tab walks search bar → card → card → …; in-card and filter
+// affordances stay pulled out via their own `tabindex="-1"`. Arrow keys
+// remain as a faster grid-shaped movement on top.
 const ARROW_DELTA: Record<string, number> = { ArrowLeft: -1, ArrowRight: 1 }
 
 function onGridKeydown(event: KeyboardEvent) {
@@ -69,7 +64,6 @@ function onGridKeydown(event: KeyboardEvent) {
   event.preventDefault()
   const nextIndex = Math.min(cards.length - 1, Math.max(0, currentIndex + delta))
   if (nextIndex === currentIndex) return
-  activeCardIndex.value = nextIndex
   cards[nextIndex]?.focus()
 }
 
@@ -114,6 +108,7 @@ function clearFilters() {
   activePlatforms.value = []
   activeKeywords.value = []
   deprecatedOnly.value = false
+  query.value = ''
 }
 
 // Page-scoped "/" handler — focuses the inline SearchInput. This is
@@ -162,6 +157,7 @@ onUnmounted(() => window.removeEventListener('keydown', onKeydown))
           :total="catalog.packages.length"
           :filtered="filtered.length"
           :active-filter-labels="activeFilterLabels"
+          :has-query="query.length > 0"
           :generated="catalog.generated"
           @clear-filters="clearFilters"
         />
@@ -176,10 +172,9 @@ onUnmounted(() => window.removeEventListener('keydown', onKeydown))
       />
       <CatalogGrid v-else @keydown="onGridKeydown">
         <PackageCard
-          v-for="(pkg, i) in filtered"
+          v-for="pkg in filtered"
           :key="pkg.name"
           :pkg="pkg"
-          :tabindex="i === activeCardIndex ? 0 : -1"
         />
       </CatalogGrid>
     </template>

@@ -160,7 +160,14 @@ onMounted(() => {
   display: grid;
   grid-template-columns: 1fr 300px;
   grid-template-areas: 'versions rail' 'readme rail';
-  gap: var(--space-6) var(--space-7);
+  /* 14px row gap = .meta-rail's block-to-block gap, so vertical distance
+     between boxes is uniform across both columns (versions→readme left,
+     card→card right). Row 1 must hug the versions box (min-content) with
+     the 1fr row absorbing the rail's height — the rail spans both rows,
+     and with auto rows the grid distributes its height INTO row 1, shoving
+     the readme ~100px below a short (collapsed) versions box. */
+  grid-template-rows: min-content 1fr;
+  gap: 14px var(--space-7);
   align-items: start;
 }
 
@@ -211,6 +218,7 @@ onMounted(() => {
   .detail-columns {
     grid-template-columns: 1fr;
     grid-template-areas: 'versions' 'rail' 'readme';
+    grid-template-rows: auto;
   }
 
   .detail-rail {
@@ -229,6 +237,7 @@ onMounted(() => {
 @media (max-width: 639px) {
   .detail-columns {
     grid-template-areas: 'rail' 'versions' 'readme';
+    grid-template-rows: auto;
   }
 
   .detail-rail {

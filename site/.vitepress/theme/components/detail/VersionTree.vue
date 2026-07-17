@@ -14,7 +14,7 @@ import CopyContextMenu, { buildTagCopyActions } from '../shared/CopyContextMenu.
 import CopyIcon from '../shared/CopyIcon.vue'
 import { useCopyState } from '../../composables/useCopyState'
 import { minorGroupHasYanked, rowHasHiddenYanked } from '../../utils/version'
-import type { MinorGroup, VariantRow, VersionTable } from '../../utils/version'
+import type { MajorGroup, MinorGroup, VariantRow, VersionTable } from '../../utils/version'
 
 // Relocated + reworked from `components/VersionTree.vue` (pre-redesign).
 // WP-D is the single owner of `buildVersionTable`'s redesign (plan
@@ -147,13 +147,20 @@ function minorPreviewDigest(minor: MinorGroup): string | undefined {
   return minor.digest ?? minor.patches[0]?.digest
 }
 
-function onMinorHover(minor: MinorGroup) {
-  const digest = minorPreviewDigest(minor)
+/** Concrete copy target for a synthesized major header: its newest release
+ * (minor groups and patches are both sorted newest-first). */
+function majorFallbackTag(mg: MajorGroup): string {
+  return mg.minorGroups[0]?.patches[0]?.tag ?? mg.minorGroups[0]?.minorTag ?? String(mg.major)
+}
+
+function onMajorHover(mg: MajorGroup) {
+  const digest = mg.digest ?? mg.minorGroups[0]?.patches[0]?.digest
   if (digest) emit('hover-tag', digest)
 }
 
-function patchLabel(count: number): string {
-  return count === 1 ? '1 PATCH RELEASE' : `${count} PATCH RELEASES`
+function onMinorHover(minor: MinorGroup) {
+  const digest = minorPreviewDigest(minor)
+  if (digest) emit('hover-tag', digest)
 }
 </script>
 
@@ -244,18 +251,20 @@ function patchLabel(count: number): string {
             :key="mg.major"
             class="major-group"
           >
-            <!-- Major version tag as row header -->
+            <!-- Major version tag as row header. A synthesized major (no
+                 real rolling tag on the wire) wears the same badge + menu,
+                 resolved to the group's newest release for all copy
+                 targets — same denotation as the minor-hover fallback. -->
             <div class="major-header">
               <TagBadge
-                v-if="mg.majorTag"
-                :tag="mg.majorTag"
+                :tag="mg.majorTag ?? majorFallbackTag(mg)"
+                :label="mg.majorTag ? undefined : String(mg.major)"
                 :qualified-name="qualifiedName"
                 variant="rolling"
                 :yanked="!!mg.yanked"
                 :yanked-reason="mg.yanked?.reason"
-                @mouseenter="mg.digest && emit('hover-tag', mg.digest)"
+                @mouseenter="onMajorHover(mg)"
               />
-              <span v-else class="major-number">{{ mg.major }}</span>
             </div>
             <!-- Minor groups for this major -->
             <div v-if="mg.minorGroups.length" class="minor-groups">
@@ -294,7 +303,6 @@ function patchLabel(count: number): string {
                   </PopoverTrigger>
                   <PopoverPortal>
                     <PopoverContent class="minor-popover" :class="{ closing: isClosing(minorKey(mg.major, minor)) }" side="bottom" align="start" :side-offset="4">
-                      <span class="popover-title">{{ minor.minorTag }} — {{ patchLabel(minor.patches.length) }}</span>
                       <div class="minor-children">
                         <TagBadge
                           v-for="patch in minor.patches"
@@ -308,7 +316,7 @@ function patchLabel(count: number): string {
                           @copied="closePopover(minorKey(mg.major, minor))"
                         />
                       </div>
-                      <div class="yanked-reasons">
+                      <div v-if="minor.patches.some(p => p.yanked)" class="yanked-reasons">
                         <span v-for="patch in minor.patches.filter(p => p.yanked)" :key="patch.tag" class="yanked-reason">
                           <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" /><line x1="12" y1="9" x2="12" y2="13" /><line x1="12" y1="17" x2="12.01" y2="17" /></svg>
                           {{ patch.tag }} yanked — {{ patch.yanked!.reason }} · {{ patch.yanked!.at.slice(0, 10) }}
@@ -609,14 +617,6 @@ function patchLabel(count: number): string {
   flex-shrink: 0;
 }
 
-.major-number {
-  font-family: var(--font-mono);
-  font-size: var(--text-xs);
-  font-weight: 600;
-  color: var(--c-text-2);
-  padding: 0.2rem 0.4rem;
-}
-
 /* Minor version groups */
 .minor-groups {
   display: flex;
@@ -640,16 +640,6 @@ function patchLabel(count: number): string {
   display: flex;
   flex-wrap: wrap;
   gap: 0.35rem;
-}
-
-.popover-title {
-  display: block;
-  font-family: var(--font-mono);
-  font-size: 10px;
-  font-weight: 500;
-  color: var(--c-text-3);
-  letter-spacing: 0.05em;
-  margin-bottom: 0.4rem;
 }
 
 .yanked-reasons {

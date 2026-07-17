@@ -8,31 +8,33 @@
 export interface CopyAction {
   label: string
   command: string
-  icon: 'identifier' | 'tag' | 'project' | 'global' | 'inspect' | 'exec'
+  icon: 'identifier' | 'tag' | 'project' | 'global' | 'install' | 'inspect' | 'exec'
 }
 
 /**
- * The five copy actions (+ tentative sixth "Exec") for a single
- * `qualifiedName:tag` identifier — single source of truth for the action
- * list every per-tag context menu on the detail page builds (`TagBadge.vue`
- * badges, `VersionTree.vue`'s alias-chain segments). Command strings +
- * ordering match the original `TagBadge.vue` inline menu verbatim.
+ * SINGLE source of truth for EVERY copy context menu — detail-page tag
+ * badges (`TagBadge.vue`, `VersionTree.vue` alias-chain segments), the
+ * detail install grid (`MetaRail.vue`), and the catalog card's install box
+ * (`InstallRow.vue`). Do NOT hand-roll an action list in a consumer: that
+ * is exactly how the catalog menu silently missed a later-added action.
  *
- * `InstallRow.vue` (catalog card install box) does NOT use this — its
- * identifier can fall back to a bare qualified name when no tag is known,
- * a case this helper doesn't need to model since every detail-page tag
- * badge always has a real tag.
+ * `tag` is optional — a catalog card may know no tag, in which case the
+ * identifier is the bare qualified name and the tag-only action is omitted.
  */
-export function buildTagCopyActions(qualifiedName: string, tag: string): CopyAction[] {
-  const identifier = `${qualifiedName}:${tag}`
-  return [
+export function buildTagCopyActions(qualifiedName: string, tag?: string | null): CopyAction[] {
+  const identifier = tag ? `${qualifiedName}:${tag}` : qualifiedName
+  const list: CopyAction[] = [
     { label: 'Copy identifier', command: identifier, icon: 'identifier' },
-    { label: 'Copy tag', command: tag, icon: 'tag' },
+  ]
+  if (tag) list.push({ label: 'Copy tag', command: tag, icon: 'tag' })
+  list.push(
     { label: 'Add to project', command: `ocx add ${identifier}`, icon: 'project' },
     { label: 'Add globally', command: `ocx --global add ${identifier}`, icon: 'global' },
+    { label: 'Install command', command: `ocx package install ${identifier}`, icon: 'install' },
     { label: 'Inspect command', command: `ocx package inspect ${identifier}`, icon: 'inspect' },
     { label: 'Exec command', command: `ocx package exec ${identifier}`, icon: 'exec' },
-  ]
+  )
+  return list
 }
 </script>
 
@@ -101,7 +103,13 @@ defineProps<{
             <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z" />
             <line x1="7" y1="7" x2="7.01" y2="7" />
           </svg>
+          <!-- Project = folder (used consistently with the install grid's
+               row icons in MetaRail.vue); the former download-tray glyph
+               now denotes 'install' below. -->
           <svg v-else-if="action.icon === 'project'" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z" />
+          </svg>
+          <svg v-else-if="action.icon === 'install'" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
             <polyline points="7 10 12 15 17 10" />
             <line x1="12" y1="15" x2="12" y2="3" />
