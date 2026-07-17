@@ -1,0 +1,27 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://index.ocx.sh/schema/c-index.schema.json",
+  "title": "OCX Index Catalog Enumeration",
+  "description": "Full-catalog enumeration snapshot served at /c/index.json. Maps every published package, keyed by bare <namespace>/<package> (no ocx.sh/ prefix, no schema-level ordering guarantee), to the current content digest of its package root — lets a client enumerate or diff the whole catalog without a per-package conditional GET.",
+  "type": "object",
+  "properties": {
+    "format_version": {
+      "type": "integer",
+      "minimum": 1,
+      "description": "Monotonically increasing wire-format generation counter. Named format_version, not version, to stay lexically distinct from package-level version concepts."
+    },
+    "packages": {
+      "type": "object",
+      "description": "Every published package, bare <namespace>/<package> to sha256 content digest of its current package root.",
+      "propertyNames": {
+        "pattern": "^[a-z0-9](?:[a-z0-9]|-(?=[a-z0-9])){0,38}/[a-z0-9]+((\\.|_|__|-+)[a-z0-9]+)*$"
+      },
+      "additionalProperties": {
+        "type": "string",
+        "pattern": "^sha256:[a-f0-9]{64}$"
+      }
+    }
+  },
+  "required": ["format_version", "packages"],
+  "additionalProperties": false
+}

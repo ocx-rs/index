@@ -4,6 +4,7 @@
   "owners": [{ "github": "alice", "github_id": 123456 }],
   "status": "active",
   "deprecated_message": null,
+  "superseded_by": null,
   "created": "2026-07-17",
   "desc": null,
   "tags": {},
