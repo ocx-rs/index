@@ -8,12 +8,20 @@ import {
   ContextMenuItem,
 } from 'reka-ui'
 
+// Relocated verbatim from `components/TagBadge.vue` (pre-redesign) into
+// `components/detail/` — WP-D owns this rework. The five copy actions'
+// command strings + 1300/1500ms timing are UNCHANGED from the original.
 const props = withDefaults(defineProps<{
   tag: string
   qualifiedName: string
   variant?: 'default' | 'rolling' | 'minor' | 'child'
+  /** Presence of `tags[tag].yanked` on the wire — struck + dashed amber,
+   * never interactive-looking (still clickable/copyable; a yanked tag is
+   * still a real, installable artifact, just discouraged). */
+  yanked?: boolean
 }>(), {
   variant: 'default',
+  yanked: false,
 })
 
 const emit = defineEmits<{ copied: [] }>()
@@ -33,11 +41,18 @@ function inspectCmd() {
   return `ocx package inspect ${props.qualifiedName}:${props.tag}`
 }
 
+// ponytail: tentative sixth action (plan_site_redesign.md WP-D deliverable
+// text) — isolated in its own function + its own ContextMenuItem block below
+// so dropping it is a two-line removal, not a refactor.
+function execCmd() {
+  return `ocx package exec ${props.qualifiedName}:${props.tag}`
+}
+
 async function copyText(text: string) {
   if (copied.value) return
   await copy(text)
   copied.value = true
-  setTimeout(() => emit('copied'), 1300)  // start fade-out 200ms before checkmark ends
+  setTimeout(() => emit('copied'), 1300) // start fade-out 200ms before checkmark ends
   setTimeout(() => { copied.value = false }, 1500)
 }
 
@@ -55,8 +70,8 @@ async function handleClick() {
     <ContextMenuTrigger as-child>
       <code
         class="tag-badge"
-        :class="[variant, { copied }]"
-        :title="`Click to copy identifier`"
+        :class="[variant, { copied, yanked }]"
+        :title="yanked ? 'Yanked — click to copy identifier' : 'Click to copy identifier'"
         @click="handleClick"
       >
         <span class="tag-text">{{ tag }}</span>
@@ -112,6 +127,15 @@ async function handleClick() {
           </svg>
           <span>Inspect command</span>
         </ContextMenuItem>
+        <!-- ponytail: tentative sixth item (plan: "easy to drop") — delete
+             this block + `execCmd()` above to revert to the five verbatim
+             actions. -->
+        <ContextMenuItem class="ctx-item" @select="copyText(execCmd())">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polygon points="5 3 19 12 5 21 5 3" />
+          </svg>
+          <span>Exec command</span>
+        </ContextMenuItem>
     </ContextMenuContent>
   </ContextMenuRoot>
 </template>
@@ -121,13 +145,14 @@ async function handleClick() {
   position: relative;
   display: inline-flex;
   align-items: center;
-  font-size: 0.8rem;
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
   font-weight: 500;
   padding: 0.2rem 0.6rem;
-  background: var(--vp-c-bg-soft);
-  border: 1px solid var(--vp-c-divider);
-  border-radius: 4px;
-  color: var(--vp-c-text-2);
+  background: var(--c-surface-2);
+  border: 1px solid var(--c-line);
+  border-radius: var(--radius-sm);
+  color: var(--c-text-2);
   cursor: pointer;
   transition: border-color 0.3s, color 0.3s, background 0.3s;
   user-select: none;
@@ -138,13 +163,13 @@ async function handleClick() {
 }
 
 .tag-badge.child {
-  font-size: 0.75rem;
-  color: var(--vp-c-text-3);
+  font-size: var(--text-2xs);
+  color: var(--c-text-3);
 }
 
 .tag-badge:hover {
-  border-color: var(--vp-c-brand);
-  color: var(--vp-c-brand);
+  border-color: var(--c-accent);
+  color: var(--c-accent);
 }
 
 .tag-text {
@@ -160,9 +185,8 @@ async function handleClick() {
 }
 
 .tag-badge.copied {
-  border-color: var(--vp-c-green-2);
-  color: var(--vp-c-green-2);
-  background: var(--vp-c-green-soft);
+  border-color: var(--c-ok);
+  color: var(--c-ok);
 }
 
 .tag-badge.copied .tag-text {
@@ -174,6 +198,14 @@ async function handleClick() {
   opacity: 1;
   transition: opacity 0.1s ease-out;
 }
+
+/* Yanked — struck, dashed amber, muted (design mock 1c/1d). */
+.tag-badge.yanked:not(.copied) {
+  color: var(--c-text-3);
+  border-style: dashed;
+  border-color: var(--c-warn);
+  text-decoration: line-through;
+}
 </style>
 
 <style>
@@ -181,10 +213,9 @@ async function handleClick() {
 .ctx-menu {
   min-width: 200px;
   padding: 0.35rem;
-  background: var(--vp-c-bg);
-  border: 1px solid var(--vp-c-divider);
-  border-radius: 8px;
-  box-shadow: var(--vp-shadow-3);
+  background: var(--c-surface);
+  border: 1px solid var(--c-line);
+  border-radius: var(--radius-lg);
   z-index: 100;
   animation: ctx-fade-in 0.12s ease-out;
 }
@@ -194,9 +225,10 @@ async function handleClick() {
   align-items: center;
   gap: 0.5rem;
   padding: 0.45rem 0.6rem;
-  border-radius: 4px;
-  font-size: 0.8rem;
-  color: var(--vp-c-text-2);
+  border-radius: var(--radius-sm);
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  color: var(--c-text-2);
   cursor: pointer;
   outline: none;
   transition: background 0.1s, color 0.1s;
@@ -204,8 +236,8 @@ async function handleClick() {
 
 .ctx-item:hover,
 .ctx-item[data-highlighted] {
-  background: var(--vp-c-brand-soft);
-  color: var(--vp-c-brand-dark);
+  background: var(--c-surface-2);
+  color: var(--c-accent);
 }
 
 @keyframes ctx-fade-in {

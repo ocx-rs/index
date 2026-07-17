@@ -6,6 +6,8 @@
  * variants match `[a-z][a-z0-9.]*` and versions start with a digit.
  */
 
+import type { TagEntry } from '../composables/usePackageRoot'
+
 // --- Types ---
 
 export interface Version {
@@ -22,16 +24,46 @@ export type ParsedTag =
   | { kind: 'version'; version: Version; raw: string }
   | { kind: 'other'; raw: string }
 
+/** A single materialized tag, carrying its CAS digest + optional yank record
+ * straight through from the wire (`root.schema.json`'s `tagEntry`/`yanked`
+ * defs) — every rendered tag in the table carries these so `TagBadge` can
+ * strike yanked rows and `VersionTree` can fire an observation-object fetch
+ * on hover without a second lookup back into the raw tags map. */
+export interface RenderedTag {
+  tag: string
+  digest: string
+  yanked?: { reason: string, at: string }
+}
+
+/** One equal-digest alias member in a row's default segmented control
+ * (design mock 1c: "equal-digest tags render as one segmented control").
+ * Ordered least- to most-specific (rolling → major → minor → patch/build). */
+export type AliasMember = RenderedTag
+
 /** A collapsible minor version group. */
 export interface MinorGroup {
-  minorTag: string   // full tag string, e.g. "slim-3.12"
-  children: string[] // patch/build full tags, sorted newest-first
+  /** The minor tag itself (e.g. "3.31") when a real tag observes it —
+   * `undefined` digest/yanked when no such tag exists and this header is a
+   * synthesized label for its patch children only. */
+  minorTag: string
+  digest?: string
+  yanked?: { reason: string, at: string }
+  /** Patch/build tags under this minor, sorted newest-first. Inclusive of
+   * any tag that also appears in the row's `aliasChain` — ponytail:
+   * deliberate simplification (plan's "Version-table ownership" section),
+   * alias-chain members are not excluded here, so a tag can legitimately
+   * render twice (segmented control + patch chip). Matches the pre-existing
+   * `keyTags`/`majorGroups` duplication this redesign inherits. */
+  patches: RenderedTag[]
 }
 
 /** A major version group in the expanded view. */
 export interface MajorGroup {
   major: number
-  majorTag: string | null  // rolling major tag (e.g. "3", "slim-3") — null if not present in tags
+  /** Rolling major tag (e.g. "3", "slim-3") — `undefined` if not observed. */
+  majorTag: string | null
+  digest?: string
+  yanked?: { reason: string, at: string }
   minorGroups: MinorGroup[]
 }
 
@@ -40,14 +72,28 @@ export interface VariantRow {
   variant: string | null
   label: string               // display label
   isDefault: boolean          // true when variant is null (the default variant)
-  keyTags: string[]           // prominent tags: rolling → major → minor → patch → build (latest at each depth)
+  /** The row's identity tag for the default segmented control's click-to-copy
+   * and for eager observation prefetch: `latest` when live and status isn't
+   * `deprecated`, else the row's own rolling tag (bare variant name) when
+   * live, else the highest-precision live version tag. `null` when the row
+   * has no live (non-yanked) tag at all. */
+  primaryTag: string | null
+  /** True only when `primaryTag === 'latest'` — drives the coral "latest"
+   * segment highlight. Never true for a `deprecated` package (governance:
+   * deprecated rows never select `latest` as primary, even if the tag is
+   * still technically present in `tags` — see `buildVersionTable`). */
+  showLatestHighlight: boolean
+  /** Every live (non-yanked) tag sharing `primaryTag`'s digest, ordered
+   * rolling → major → minor → patch/build. Empty when `primaryTag` is
+   * `null`. */
+  aliasChain: AliasMember[]
   majorGroups: MajorGroup[]   // expanded view: grouped by major version, sorted descending
 }
 
-/** Result of building the version table from a tag list. */
+/** Result of building the version table from a package's wire tags map. */
 export interface VersionTable {
-  rows: VariantRow[]      // one per variant, default first
-  unknownTags: string[]   // tags that don't parse as versions or known rolling names
+  rows: VariantRow[]        // one per variant, default first
+  unknownTags: RenderedTag[] // tags that don't parse as versions or known rolling names
 }
 
 // --- Parsing ---
@@ -147,57 +193,80 @@ export function versionDepth(v: Version): number {
 
 // --- Table building ---
 
-/**
- * Build the version table from a flat list of tags.
- *
- * Each variant gets a row with:
- * - keyTags: the cascade chain of the latest version (one tag per depth level),
- *   prefixed by rolling tags (latest, bare variant name).
- * - majorGroups: versioned tags grouped by major → minor, excluding keyTags.
- *
- * Tags that don't parse as versions and aren't known rolling names go into unknownTags.
- */
-export function buildVersionTable(tags: string[]): VersionTable {
-  // Classify all tags
-  interface TagEntry {
-    tag: string
-    variant: string | null
-    version: Version | null  // null for "latest" and bare variant names
-    depth: number            // 0 for rolling, 1-4 for versioned
-  }
+type Yanked = { reason: string, at: string }
 
-  const variantEntries = new Map<string | null, TagEntry[]>()
-  const unknownTags: string[] = []
+interface ClassifiedEntry {
+  tag: string
+  variant: string | null
+  version: Version | null  // null for "latest" and bare variant names
+  depth: number            // 0 for rolling, 1-4 for versioned
+  digest: string
+  yanked?: Yanked
+}
+
+/**
+ * Build the version table from a package's wire tags map
+ * (`root.schema.json`'s `tags`) plus its governance `status`.
+ *
+ * Single owner of three things (plan `plan_site_redesign.md`,
+ * "Version-table ownership"):
+ *
+ * 1. **Digest-equality alias chains** — the default row's segmented
+ *    control. `primaryTag` is `latest` when live (never for a `deprecated`
+ *    package, even if a stray `latest` tag exists — governance: deprecated
+ *    packages don't get new `latest` writes, but this guards the display
+ *    regardless), else the row's own rolling tag when live, else the
+ *    highest-precision live version tag. `aliasChain` is every live tag
+ *    sharing that tag's digest.
+ * 2. **Major → minor grouping** with inclusive `·N` patch counts — the
+ *    existing lexical grouping logic (major/minor tag maps, sorted
+ *    descending), extended to carry digest + yank data per tag.
+ * 3. **Yank threading** — every `RenderedTag` (alias member, major/minor
+ *    header, patch) carries its `yanked` record through untouched from the
+ *    wire, so `TagBadge`/`VersionTree` render strike-through without a
+ *    second lookup.
+ *
+ * Tags that don't parse as versions and aren't known rolling names go into
+ * `unknownTags`.
+ */
+export function buildVersionTable(
+  tags: Record<string, TagEntry>,
+  status: 'active' | 'deprecated' | 'yanked',
+): VersionTable {
+  const variantEntries = new Map<string | null, ClassifiedEntry[]>()
+  const unknownTags: RenderedTag[] = []
   const knownVariants = new Set<string>()
+  const tagNames = Object.keys(tags)
 
   // First pass: collect all variant names from version tags
-  for (const tag of tags) {
+  for (const tag of tagNames) {
     const parsed = parseTag(tag)
     if (parsed.kind === 'version' && parsed.version.variant !== null) {
       knownVariants.add(parsed.version.variant)
     }
   }
 
+  function pushEntry(variant: string | null, entry: ClassifiedEntry) {
+    if (!variantEntries.has(variant)) variantEntries.set(variant, [])
+    variantEntries.get(variant)!.push(entry)
+  }
+
   // Second pass: classify each tag
-  for (const tag of tags) {
+  for (const tag of tagNames) {
+    const wire = tags[tag]
     const parsed = parseTag(tag)
 
     if (parsed.kind === 'latest') {
-      pushEntry(null, { tag, variant: null, version: null, depth: 0 })
+      pushEntry(null, { tag, variant: null, version: null, depth: 0, digest: wire.content, yanked: wire.yanked })
     } else if (parsed.kind === 'version') {
       const v = parsed.version
-      pushEntry(v.variant, { tag, variant: v.variant, version: v, depth: versionDepth(v) })
+      pushEntry(v.variant, { tag, variant: v.variant, version: v, depth: versionDepth(v), digest: wire.content, yanked: wire.yanked })
     } else if (parsed.kind === 'other' && knownVariants.has(parsed.raw)) {
       // Bare variant name (e.g., "slim") — rolling tag for that variant
-      pushEntry(parsed.raw, { tag: parsed.raw, variant: parsed.raw, version: null, depth: 0 })
+      pushEntry(parsed.raw, { tag: parsed.raw, variant: parsed.raw, version: null, depth: 0, digest: wire.content, yanked: wire.yanked })
     } else {
-      unknownTags.push(parsed.raw)
+      unknownTags.push({ tag: parsed.raw, digest: wire.content, yanked: wire.yanked })
     }
-  }
-
-  function pushEntry(variant: string | null, entry: TagEntry) {
-    if (!variantEntries.has(variant)) variantEntries.set(variant, [])
-    variantEntries.get(variant)!.push(entry)
   }
 
   // Sort variants: default first, then alphabetically
@@ -207,47 +276,62 @@ export function buildVersionTable(tags: string[]): VersionTable {
     return a.localeCompare(b)
   })
 
-  const rows: VariantRow[] = sortedVariants.map(variant => {
+  const rows: VariantRow[] = sortedVariants.map((variant) => {
+    const isDefault = variant === null
     const entries = variantEntries.get(variant)!
 
-    // Sort all versioned entries newest-first (highest version first)
+    // ALL versioned entries (yanked included) — feeds majorGroups, exactly
+    // as before the redesign; yanked tags stay visible in their group, only
+    // excluded from primary/alias-chain selection below.
     const versioned = entries
       .filter(e => e.version !== null)
       .sort((a, b) => compareVersions(b.version!, a.version!))
 
-    // Find the latest tag at each depth level
-    const latestByDepth = new Map<number, string>()
-    for (const e of versioned) {
-      if (!latestByDepth.has(e.depth)) {
-        latestByDepth.set(e.depth, e.tag)
+    // Live (non-yanked) entries only — feeds primary tag + alias chain.
+    // ponytail: a deprecated package's stray `latest` tag (bot governance
+    // says this shouldn't happen post-deprecation, but the schema doesn't
+    // forbid it) is dropped from `live` entirely rather than merely
+    // ineligible-as-primary — it won't appear in the alias chain even as a
+    // passive member. Upgrade path if that gap ever matters: keep it in
+    // `live` and only exclude it from primary-tag *selection*.
+    const live = entries.filter(e => !e.yanked && !(isDefault && status === 'deprecated' && e.tag === 'latest'))
+    const liveRolling = live.filter(e => e.depth === 0)
+    const liveVersioned = live
+      .filter((e): e is ClassifiedEntry & { version: Version } => e.depth > 0)
+      .sort((a, b) => compareVersions(b.version, a.version))
+
+    const liveLatestByDepth = new Map<number, ClassifiedEntry>()
+    for (const e of liveVersioned) {
+      if (!liveLatestByDepth.has(e.depth)) liveLatestByDepth.set(e.depth, e)
+    }
+
+    const primaryEntry: ClassifiedEntry | undefined
+      = liveRolling[0]
+        ?? liveLatestByDepth.get(4)
+        ?? liveLatestByDepth.get(3)
+        ?? liveLatestByDepth.get(2)
+        ?? liveLatestByDepth.get(1)
+
+    const primaryTag = primaryEntry?.tag ?? null
+    const showLatestHighlight = primaryTag === 'latest'
+
+    const aliasChain: AliasMember[] = []
+    if (primaryEntry) {
+      const seen = new Set<string>()
+      const members = live
+        .filter(e => e.digest === primaryEntry.digest)
+        .sort((a, b) => a.depth - b.depth || (a.version && b.version ? compareVersions(b.version, a.version) : 0))
+      for (const m of members) {
+        if (seen.has(m.tag)) continue
+        seen.add(m.tag)
+        aliasChain.push({ tag: m.tag, digest: m.digest, yanked: m.yanked })
       }
     }
 
-    // Build key tags: rolling first, then depth 1 → 2 → 3 → 4
-    const keyTags: string[] = []
-    const keyTagSet = new Set<string>()
-
-    // Add rolling tags (latest, bare variant name)
-    const rollingEntries = entries.filter(e => e.depth === 0)
-    for (const e of rollingEntries) {
-      if (!keyTagSet.has(e.tag)) {
-        keyTags.push(e.tag)
-        keyTagSet.add(e.tag)
-      }
-    }
-
-    // Add latest at each version depth
-    for (const depth of [1, 2, 3, 4]) {
-      const tag = latestByDepth.get(depth)
-      if (tag && !keyTagSet.has(tag)) {
-        keyTags.push(tag)
-        keyTagSet.add(tag)
-      }
-    }
-
-    // Build major groups from ALL versioned tag
-    const allMajorTags = new Map<number, string>() // major → rolling major tag
-    const majorMinorMap = new Map<number, Map<string, { minorTag: string; children: { tag: string; version: Version }[] }>>()
+    // Build major groups from ALL versioned tags (existing lexical grouping
+    // logic, unchanged shape — extended with digest/yanked per tag).
+    const allMajorTags = new Map<number, ClassifiedEntry>()
+    const majorMinorMap = new Map<number, Map<string, { minorEntry: ClassifiedEntry | null, minorTagSynth: string, patches: (ClassifiedEntry & { version: Version })[] }>>()
 
     for (const e of versioned) {
       const v = e.version!
@@ -255,7 +339,7 @@ export function buildVersionTable(tags: string[]): VersionTable {
       if (e.depth === 1) {
         // Major rolling tag (e.g., "3", "slim-3")
         if (!allMajorTags.has(v.major)) {
-          allMajorTags.set(v.major, e.tag)
+          allMajorTags.set(v.major, e)
         }
       } else if (e.depth >= 2) {
         if (!majorMinorMap.has(v.major)) majorMinorMap.set(v.major, new Map())
@@ -263,15 +347,18 @@ export function buildVersionTable(tags: string[]): VersionTable {
         const mk = `${v.major}.${v.minor}`
 
         if (e.depth === 2) {
-          if (!minorMap.has(mk)) {
-            minorMap.set(mk, { minorTag: e.tag, children: [] })
+          const existing = minorMap.get(mk)
+          if (!existing) {
+            minorMap.set(mk, { minorEntry: e, minorTagSynth: e.tag, patches: [] })
+          } else {
+            existing.minorEntry = e
           }
         } else {
           if (!minorMap.has(mk)) {
             const prefix = v.variant ? `${v.variant}-` : ''
-            minorMap.set(mk, { minorTag: `${prefix}${v.major}.${v.minor}`, children: [] })
+            minorMap.set(mk, { minorEntry: null, minorTagSynth: `${prefix}${v.major}.${v.minor}`, patches: [] })
           }
-          minorMap.get(mk)!.children.push({ tag: e.tag, version: v })
+          minorMap.get(mk)!.patches.push(e as ClassifiedEntry & { version: Version })
         }
       }
     }
@@ -285,8 +372,8 @@ export function buildVersionTable(tags: string[]): VersionTable {
     // Build major groups, sorted descending
     const majorGroups: MajorGroup[] = [...allMajors]
       .sort((a, b) => b - a)
-      .map(major => {
-        const majorTag = allMajorTags.get(major) ?? null
+      .map((major) => {
+        const majorEntry = allMajorTags.get(major) ?? null
         const minorMap = majorMinorMap.get(major)
 
         let minorGroups: MinorGroup[] = []
@@ -296,20 +383,33 @@ export function buildVersionTable(tags: string[]): VersionTable {
             const bMin = parseInt(b[0].split('.')[1], 10)
             return bMin - aMin
           })
-          minorGroups = sorted.map(([, { minorTag, children }]) => {
-            children.sort((a, b) => compareVersions(b.version, a.version))
-            return { minorTag, children: children.map(c => c.tag) }
+          minorGroups = sorted.map(([, { minorEntry, minorTagSynth, patches }]) => {
+            patches.sort((a, b) => compareVersions(b.version, a.version))
+            return {
+              minorTag: minorEntry?.tag ?? minorTagSynth,
+              digest: minorEntry?.digest,
+              yanked: minorEntry?.yanked,
+              patches: patches.map(p => ({ tag: p.tag, digest: p.digest, yanked: p.yanked })),
+            }
           })
         }
 
-        return { major, majorTag, minorGroups }
+        return {
+          major,
+          majorTag: majorEntry?.tag ?? null,
+          digest: majorEntry?.digest,
+          yanked: majorEntry?.yanked,
+          minorGroups,
+        }
       })
 
     return {
       variant,
       label: variant ?? 'default',
-      isDefault: variant === null,
-      keyTags,
+      isDefault,
+      primaryTag,
+      showLatestHighlight,
+      aliasChain,
       majorGroups,
     }
   })
