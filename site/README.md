@@ -2,8 +2,12 @@
 
 [VitePress 2](https://vitepress.dev/) + [bun](https://bun.sh/) source for the
 catalog + docs surface served at `index.ocx.sh`. Design authority:
-[`adr_catalog_docs_colocation.md`](../.claude/artifacts/adr_catalog_docs_colocation.md).
-Not the wire contract — see [`../.claude/rules/product-context.md`](../.claude/rules/product-context.md)
+[`adr_catalog_docs_colocation.md`](../.claude/artifacts/adr_catalog_docs_colocation.md)
+(colocation decision) and
+[`design_mock_site_redesign/`](../.claude/artifacts/design_mock_site_redesign/)
+(visual/UX design — see that directory's `README.md` for provenance). Not the
+wire contract — see
+[`../.claude/rules/product-context.md`](../.claude/rules/product-context.md)
 for what is.
 
 ## Layout
@@ -12,16 +16,20 @@ for what is.
 site/
 ├── package.json / bun.lock
 ├── .vitepress/
-│   ├── config.mts          # nav, sidebar (scoped to /docs/ only), search, socialLinks
-│   └── theme/               # WP2-O/WP2-P: ported + adapted catalog components
+│   ├── config.mts          # site config: srcDir, dead-link scoping, Shiki
+│   │                         #   theme, header extraction, own minimal
+│   │                         #   themeConfig ({githubUrl, search})
+│   └── theme/               # blank custom theme — see "Theme" below
 ├── src/
-│   ├── index.md             # catalog home ("/") — hero only today, gains
-│   │                         #   embedded <PackageCatalog /> in WP2-P
-│   ├── docs/                # docs ("/docs/") — reference/, how-to/, ops/,
-│   │                         #   explanation/; stub index pages today, real
-│   │                         #   content lands in WP2-Q
-│   └── <namespace>/<pkg>.md # per-package wrapper pages — GENERATED, gitignored,
-│                             #   see "Generated pages" below
+│   ├── index.md              # catalog home ("/") — frontmatter `layout: catalog`
+│   ├── docs/                 # docs ("/docs/") — reference/, how-to/, ops/,
+│   │                          #   explanation/, hand-authored + committed
+│   ├── [ns]/[pkg].md         # detail-page template — frontmatter `layout: detail`
+│   │                          #   only, no per-package content (see "Dynamic
+│   │                          #   routes" below)
+│   ├── [ns]/[pkg].paths.ts   # loader: discovers every `p/<ns>/<pkg>.json` at
+│   │                          #   build time, one route per package
+│   └── 404.md                 # near-empty; triggers 404.html emission
 └── .gitignore
 ```
 
@@ -43,101 +51,126 @@ From the repo root: `task site:build` (`cd site && bun install --frozen-lockfile
 && bun run build`) — this is the exact command `task verify` and `ci.yml`'s
 `site-build` job run.
 
-## Generated pages (render-time contract)
+## Theme
 
-Per-package wrapper pages (`src/<namespace>/<package>.md`) are **compile
-input** to the VitePress build, not build output — they must exist on disk
-*before* `bun run build` runs. They are emitted by the bot's render pipeline
-(`core/render`, WP2-F) and are never committed: `.gitignore` ignores
-everything directly under `src/` except the hand-authored `docs/` tree and
-`index.md` (an explicit allowlist, since namespace directory names are
-dynamic — see the `.gitignore` comment for why a glob doesn't work here).
+`.vitepress/theme/` is a **blank custom theme** (`index.mts` exports
+`{Layout, enhanceApp}`, no `extends: DefaultTheme`) — VitePress core still
+supplies the pre-hydration `appearance` dark-class script, a writable
+`isDark` ref, `page.headers`, free-form `themeConfig`, `<Content/>`, and
+dynamic-route `params`; everything visual is this theme's own.
 
-Each wrapper page is expected to embed a `<PackageDetail />` component (see
-`adr_catalog_docs_colocation.md`) that fetches its own runtime data — the
-wrapper page itself carries no package data, only routing + any
-hand-authored prose a publisher wants alongside the generated detail view
-(see `src/catalog/cmake.md` in the source theme for the pattern being
-adapted).
+`Layout.vue` dispatches on frontmatter with a plain `v-if` chain (no global
+component registration):
 
-## Runtime catalog data (`/data/catalog/**`)
+- `page.isNotFound` → `NotFound.vue`
+- `frontmatter.layout === 'catalog'` → `CatalogPage.vue`
+- `frontmatter.layout === 'detail'` → `DetailPage.vue`
+- otherwise → `DocLayout.vue`
 
-**Not present in this source tree, ever.** Per `adr_catalog_docs_colocation.md`
-and the plan's frozen site contract, `/data/catalog/**` is emitted by the
-render pipeline directly into the *deployed* `.vitepress/dist/` tree, after
-the VitePress build completes (`render-deploy.yml`, WP3-A — build order is a
-named footgun there: reversing the two steps silently deletes the wire
-JSON). No fixture data ships in `site/public/` or `site/src/public/` — it
-would deploy to production. Locally, `bun run dev`/`bun run build` render
-the catalog and package-detail components against **no** data, and those
-components (ported in WP2-O/WP2-P) MUST degrade to a friendly empty state on
-a 404 fetch — never a build failure — exactly as they do in production
-before the first render pipeline run populates the tree.
+`SiteHeader.vue` and the global ⌘K `SearchModal.vue` render on every page,
+outside the dispatch.
 
-### Shape (today, in the source theme — what render will emit here)
+### Fetch layer (`theme/composables/`)
 
-This is what `ocx-sh/ocx`'s `website/.vitepress/theme/components/PackageCatalog.vue`
-and `PackageDetail.vue` consume **today**, captured here as the target shape
-`core/render` (WP2-F) implements. One deliberate divergence from the source
-theme, per the ADR: **no blob duplication**. The source theme copies
-logo/readme bytes into `/data/catalog/packages/<name>/logo.<ext>`; this repo
-already has a reachability-filtered CAS copy at
-`/p/<ns>/<pkg>/o/sha256/<hex>.<ext>` (see
-[`adr_locked_observation_index_format.md`](../.claude/artifacts/adr_locked_observation_index_format.md)),
-so components reference that CAS URL directly instead of a second copy.
+Runtime data comes from fetches inside the mounted components, never build-time
+props — the same static pages serve empty-catalog and populated-catalog states:
 
-`GET /data/catalog/catalog.json`:
+- `useCatalog()` — fetches `/data/catalog/catalog.json` (see "Runtime catalog
+  data" below); a 404 or any fetch failure degrades to
+  `{generated: null, packages: []}`, never throws.
+- `usePackageRoot(ns, pkg)` — fetches the wire root `/p/<ns>/<pkg>.json`; its
+  TypeScript interface mirrors the wire field names 1:1 (snake_case, matching
+  `schema/root.schema.json`); returns `{root, loading, error, notFound}`.
+- `useObservation()` — lazy-fetches an observation object
+  (`/p/<ns>/<pkg>/o/sha256/<hex>.json`) on demand, with a module-level cache
+  keyed by digest and in-flight-request dedup.
+
+CAS asset URLs (`casUrl()`, `utils/cas.ts`) always build from the bare
+`<ns>/<pkg>` route params — never from `root.name`, which carries the
+`ocx.sh/` prefix and 404s every CAS request built from it.
+
+## Dynamic routes (per-package detail pages)
+
+Per-package detail pages are a **dynamic route**, not bot-generated content.
+`src/[ns]/[pkg].paths.ts` globs the committed `p/*/*.json` tree directly at
+VitePress build time (`existsSync` guard, then one `{ns, pkg}` route per
+`p/<ns>/<pkg>.json` file) and `src/[ns]/[pkg].md` carries only
+`layout: detail` frontmatter — no per-package data lives in the source tree.
+`DetailPage.vue` fetches everything it needs at runtime via the composables
+above.
+
+This replaces an earlier design (bot-emitted wrapper Markdown, one file per
+package, gitignored compile input) — see
+[`adr_catalog_docs_colocation.md`](../.claude/artifacts/adr_catalog_docs_colocation.md)
+Amendment A1. The render pipeline (`core/render.py`) no longer emits any
+`site/src/**` content; it writes only into the deployed dist tree (see
+below).
+
+## Runtime catalog data (`/data/catalog/catalog.json`)
+
+**Not present in this source tree, ever.** `indexbot render` emits this file
+directly into the *deployed* `.vitepress/dist/` tree, after the VitePress
+build completes (`render-deploy.yml`, `task render:build` — build order is a
+named footgun there: reversing the two steps silently deletes the wire JSON,
+see `taskfile.yml`'s `render:build` task). No fixture data ships in `site/`
+— it would deploy to production. Locally, `bun run dev`/`bun run build`
+render the catalog and detail components against **no** data, and those
+components degrade to a friendly empty/not-found state on a 404 fetch —
+never a build failure — exactly as they do in production before the first
+render pipeline run populates the tree.
+
+This shape is **not** wire contract
+([`adr_locked_observation_index_format.md`](../.claude/artifacts/adr_locked_observation_index_format.md)
+D2) — it is free to evolve between deploys, unlike `/config.json` and
+`/p/**`. Emitted by `core/render.py`'s `_catalog_index`/`_catalog_entry`;
+verify against that module for the authoritative shape.
 
 ```jsonc
 {
-  "generated": "2026-07-17T00:00:00Z",
-  "registry": "ocx.sh",
+  "generated": "2026-07-17T00:00:00Z", // lexicographic max over every tag's
+                                        // observed/yanked.at timestamp across
+                                        // all packages; null if none ever observed
   "packages": [
     {
-      "name": "kitware/cmake",
-      "registry": "ocx.sh",
-      "repository": "oci://ghcr.io/ocx-contrib/cmake",
+      "namespace": "kitware",
+      "package": "cmake",
+      "name": "ocx.sh/kitware/cmake",
+      "status": "active",
+      "deprecatedMessage": null,
+      "supersededBy": null,
       "title": "CMake",
       "description": "Cross-platform build system generator.",
       "keywords": ["build", "cmake", "cpp"],
-      // Divergence from the source theme's hasLogo/logoExt pair: a CAS
-      // digest (or null) the component turns into
-      // /p/<ns>/<pkg>/o/sha256/<hex>.<ext> directly — no separate ext field
-      // needed once the URL is fully self-describing.
-      "logo": "sha256:3c4d...",
-      "hasReadme": true,
+      "latestVersion": "3.28.1",
       "tagCount": 4,
-      "platforms": ["linux", "darwin", "windows"],
-      "latestTag": "3.28.1",
-      "latestVersion": "3.28.1"
+      // union of "<os>/<architecture>" across every non-yanked tag's
+      // observation object, deduped + sorted
+      "platforms": ["linux/amd64", "linux/arm64"],
+      // pre-resolved CAS paths (never a bare digest) — null when the
+      // package has no desc.logo/desc.readme
+      "logoUrl": "/p/kitware/cmake/o/sha256/<hex>.svg",
+      "readmeUrl": "/p/kitware/cmake/o/sha256/<hex>.md"
     }
   ]
 }
 ```
 
-`GET /data/catalog/packages/<ns>/<pkg>/info.json`:
+`keywords: []`, `logoUrl: null`, and `readmeUrl: null` are all valid (a
+package with no `__ocx.desc` or no logo/readme layer) — the catalog UI
+renders an empty/placeholder state for each.
 
-```jsonc
-{
-  "name": "kitware/cmake",
-  "registry": "ocx.sh",
-  "repository": "oci://ghcr.io/ocx-contrib/cmake",
-  "title": "CMake",
-  "description": "Cross-platform build system generator.",
-  "keywords": ["build", "cmake", "cpp"],
-  "logo": "sha256:3c4d...",
-  "hasReadme": true,
-  "latestTag": "3.28.1",
-  "latestVersion": "3.28.1",
-  "tags": ["3.28.1", "3.28", "3", "latest"],
-  "platforms": ["linux", "darwin", "windows"]
-}
-```
+Components reference `logoUrl`/`readmeUrl` as CAS URLs rather than duplicated
+blob bytes (ADR's explicit divergence from `ocx-sh/ocx`'s website theme) —
+this repo already has a reachability-filtered CAS copy at
+`/p/<ns>/<pkg>/o/sha256/<hex>.<ext>`.
 
-`keywords: []` and `logo: null` are valid (a package with no `__ocx.desc` or
-no logo layer) — the catalog UI must render an empty/placeholder state for
-both, per plan risk 6.
+## Local design review
 
-This shape is **not** wire contract (`adr_locked_observation_index_format.md`
-D2) — it is free to evolve between deploys, unlike `/config.json` and
-`/p/**`.
+`task demo:serve` (repo root) chains `task demo:seed` (populates `p/` with
+throwaway packages from the bot's golden render fixtures) and
+`task site:serve` (`task render:build` then `bun run preview`), serving the
+exact production-shaped dist tree — including `/p/**`, `/c/index.json`, and
+`/data/catalog/catalog.json` — that Cloudflare Pages would deploy. Run `task
+demo:clean` before `task verify`; demo digests are not schema-hex-valid, so
+seeded data fails `schema:validate:rendered`. Never commit `p/`'s seeded
+contents.
