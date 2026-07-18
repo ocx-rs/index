@@ -161,9 +161,9 @@ def check_name_matches_path(package_id: PackageId, root: PackageRoot) -> None:
 
 def check_superseded_by(root: PackageRoot) -> None:
     """`root.superseded_by`, when set, must be a shape-valid
-    `<namespace>/<package>` id (reused via `validate_payload.parse_package_id`
-    — never a second hand-rolled regex, ADR-4 BD-4) that does not name
-    `root` itself.
+    `<namespace>/<package>` id (reused via this module's own
+    `parse_package_id` — never a second hand-rolled regex, ADR-4 BD-4) that
+    does not name `root` itself.
 
     `root.superseded_by is None` is a no-op — a package that has not been
     superseded carries no constraint here.

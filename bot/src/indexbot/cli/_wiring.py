@@ -8,16 +8,15 @@ time. This matters because several `indexbot` subcommands run in CI jobs that
 deliberately hold no write-scoped credential at all — `validate.yml`'s
 `schema-validate-pr` job runs `indexbot validate` with "no network, no write
 scope" (no `GITHUB_TOKEN`/`GITHUB_REPOSITORY` in its env), and
-`announce.yml`'s unprivileged `validate-payload` job runs
-`indexbot announce --validate-only` the same way, before `regen-and-pr`'s
-privileged job ever starts. If `DISPATCH`'s values were already-constructed
-port instances (e.g. bound once at import time via `functools.partial`),
-merely importing this module would eagerly read `GITHUB_TOKEN` for every
-subcommand, including ones that need it not at all — crashing an
-unprivileged job that never sets it. Deferring construction to inside each
-`_run_*` function (only reached once `cli/main.py` has already resolved
-which single subcommand to dispatch to) keeps every subcommand's environment
-requirements independent of the others.
+`cli/announce.py`'s `--out` mode reads the index repo anonymously the same
+way (no `GITHUB_TOKEN` required at all, `_index_github`). If `DISPATCH`'s
+values were already-constructed port instances (e.g. bound once at import
+time via `functools.partial`), merely importing this module would eagerly
+read `GITHUB_TOKEN` for every subcommand, including ones that need it not at
+all — crashing an unprivileged job that never sets it. Deferring
+construction to inside each `_run_*` function (only reached once
+`cli/main.py` has already resolved which single subcommand to dispatch to)
+keeps every subcommand's environment requirements independent of the others.
 """
 
 from __future__ import annotations

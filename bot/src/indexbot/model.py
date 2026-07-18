@@ -3,9 +3,10 @@
 Plain, frozen, slotted data only — no validation logic. Format validation
 against `schema/*.json` runs via `check-jsonschema` (never imported here);
 semantic checks (path<->name derivation, digest `fullmatch`, host allowlist,
-...) are `core/validate_entry.py` / `core/validate_payload.py` (Phase 2).
-Every type here is immutable by construction: the bot never mutates an
-observed value in place, it always computes a new one and rebinds.
+...) are `core/validate_entry.py` (Phase 2; `core/validate_payload.py`
+merged into it, fork-PR announce revamp). Every type here is immutable by
+construction: the bot never mutates an observed value in place, it always
+computes a new one and rebinds.
 """
 
 from __future__ import annotations
@@ -148,11 +149,11 @@ class ObservationObject:
 @dataclass(frozen=True, slots=True)
 class PackageId:
     """`<namespace>/<package>` — the logical id parsed from a
-    `p/<ns>/<pkg>.json` path or a `repository_dispatch` payload's `package`
-    field. Distinct from `PackageRoot.name`, which is the full
+    `p/<ns>/<pkg>.json` path or `cli/announce.py`'s `--package` argument.
+    Distinct from `PackageRoot.name`, which is the full
     `ocx.sh/<namespace>/<package>` form. Format validated by
-    `core/validate_payload.py`'s `PACKAGE_ID_RE` (Phase 2); this type only
-    carries the two already-validated parts.
+    `core/validate_entry.py`'s `PACKAGE_ID_RE`; this type only carries the
+    two already-validated parts.
     """
 
     namespace: str
