@@ -52,23 +52,25 @@ jobs:
           # (GitHub only populates it for same-repo PRs) — the documented
           # workaround is looking the PR up by its head commit instead, which
           # works for fork-originated PRs too (GitHub indexes every open
-          # PR's head commit against its `refs/pull/<n>/head`).
+          # PR's head commit against its `refs/pull/<n>/head`). Filtered to
+          # an EXACT head-sha match, not just "first result": a commit can be
+          # part of more than one PR's history (e.g. a rebase/merge chain),
+          # and `.[0]` alone could pick an unrelated PR that merely contains
+          # this sha — labeling (and later stale-closing) an innocent PR.
           commit_prs="$(gh api "repos/$REPO/commits/$HEAD_SHA/pulls")"
-          pr_number="$(jq -r '.[0].number // empty' <<<"$commit_prs")"
+          pr_number="$(jq -r --arg sha "$HEAD_SHA" '[.[] | select(.head.sha == $sha)][0].number // empty' <<<"$commit_prs")"
           if [ -z "$pr_number" ]; then
-            echo "::notice title=pr-checks-label::No open pull request associated with commit $HEAD_SHA - nothing to label."
+            echo "::notice title=pr-checks-label::No open pull request has $HEAD_SHA as its current head - nothing to label."
             exit 0
           fi
-          head_repo="$(jq -r '.[0].head.repo.full_name // empty' <<<"$commit_prs")"
+          head_repo="$(jq -r --arg sha "$HEAD_SHA" '[.[] | select(.head.sha == $sha)][0].head.repo.full_name // empty' <<<"$commit_prs")"
           if [ -z "$head_repo" ] || [ "$head_repo" = "$REPO" ]; then
             echo "::notice title=pr-checks-label::PR #$pr_number is not fork-authored - FP-8 scopes checks-failed labeling to fork PRs only."
             exit 0
           fi
-          # `checks-failed` should already exist as a repo label (same
-          # convention as the pre-existing refresh/new-package/
-          # human-review-required labels `indexbot classify-pr` applies) —
-          # GitHub's "add labels" endpoint auto-creates a missing label, but
-          # relying on that isn't confirmed against a real repo yet (Phase 5
-          # E2E should verify; if it doesn't, create the label once as repo
-          # setup rather than teaching this workflow to mint it).
-          gh pr edit "$pr_number" --repo "$REPO" --add-label checks-failed
+          # Raw REST call (not `gh pr edit --add-label`), matching the bot's
+          # own labeling path (`GitHubApi.add_labels`, POST .../issues/{n}/
+          # labels) — that endpoint auto-creates a missing label, live-
+          # evidenced by `human-review-required` never having been manually
+          # created before `indexbot classify-pr` first applied it.
+          gh api "repos/$REPO/issues/$pr_number/labels" -f "labels[]=checks-failed"

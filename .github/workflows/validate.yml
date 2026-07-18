@@ -114,6 +114,7 @@ jobs:
       contents: read # checkout base ref only, to run bot/'s source
       pull-requests: write # classify-pr's add_labels + auto-merge request
       statuses: write # governance-check's set_commit_status (governance/review-required); a separate scope from pull-requests
+      issues: write # governance-check's create_comment (G-20) posts via the Issues API even for a PR — pull-requests: write alone 403s it
     env:
       GH_TOKEN: ${{ github.token }}
     steps:
