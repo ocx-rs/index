@@ -40,12 +40,13 @@ from typing import TYPE_CHECKING, Final, cast
 from indexbot.cli.classify_pr import classify_pull_request
 from indexbot.core.maintainers import parse_maintainers
 from indexbot.core.validate_entry import parse_package_root
+from indexbot.errors import ValidationError
 from indexbot.exit_codes import ExitCode
 
 if TYPE_CHECKING:
     import argparse
 
-    from indexbot.model import CommitStatusState, PullRequestInfo
+    from indexbot.model import CommitStatusState, Owner, PullRequestInfo
     from indexbot.ports import GitHubPort
 
 _STATUS_CONTEXT: Final[str] = "governance/review-required"
@@ -95,14 +96,26 @@ def _disposition(change_class: str, *, author_is_owner: bool) -> tuple[CommitSta
     return "pending", f"{change_class}: awaiting human review"
 
 
+def _committed_maintainers(github: GitHubPort, base_sha: str) -> tuple[Owner, ...]:
+    """`.github/maintainers.yml` at `base_sha`, or `()` on either a missing
+    file or a malformed one — a corrupt committed file must never crash the
+    gate itself, it just means G-20 can't name anyone to assign."""
+    raw = github.get_file_contents(_MAINTAINERS_PATH, base_sha)
+    if raw is None:
+        return ()
+    try:
+        return parse_maintainers(raw)
+    except ValidationError:
+        return ()
+
+
 def _assign_reviewers_and_comment(
     github: GitHubPort, info: PullRequestInfo, *, reason: str
 ) -> None:
     """G-20: reviewers from committed `.github/maintainers.yml` (base ref),
     minus the PR author (self-review carve-out), plus one idempotent
     comment explaining why review is needed."""
-    maintainers_raw = github.get_file_contents(_MAINTAINERS_PATH, info.base_sha)
-    maintainers = () if maintainers_raw is None else parse_maintainers(maintainers_raw)
+    maintainers = _committed_maintainers(github, info.base_sha)
     logins = [
         maintainer.github for maintainer in maintainers if maintainer.github != info.author_login
     ]

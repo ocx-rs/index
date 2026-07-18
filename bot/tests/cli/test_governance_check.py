@@ -210,6 +210,20 @@ def test_missing_maintainers_file_assigns_no_reviewers_but_still_comments() -> N
     assert 1 in github.comments
 
 
+def test_malformed_maintainers_file_assigns_no_reviewers_but_still_comments() -> None:
+    # A corrupt committed maintainers.yml must never crash the gate — same
+    # graceful fallback as a missing file entirely.
+    before = _root(owners=(_OWNER,))
+    after = _root(owners=(_OTHER_OWNER,))
+    github = _github(pr_number=1, base=before, head=after, maintainers=b"not: valid\nmaintainers\n")
+
+    result = governance_check.run(_args(pr_number=1), github=github)
+
+    assert result == governance_check.ExitCode.OK
+    assert github.requested_reviewers == {}
+    assert 1 in github.comments
+
+
 def test_comment_is_idempotent_across_repeated_runs() -> None:
     before = _root(owners=(_OWNER,))
     after = _root(owners=(_OTHER_OWNER,))
