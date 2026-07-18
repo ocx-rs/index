@@ -10,7 +10,15 @@ from indexbot.core.observe import observe_one_tag
 from indexbot.core.validate_entry import serialize_observation_object, serialize_package_root
 from indexbot.errors import AnomalyError, ValidationError
 from indexbot.exit_codes import ExitCode
-from indexbot.model import Desc, ManifestFetch, Owner, OwnershipProbeResult, PackageRoot, TagEntry
+from indexbot.model import (
+    Desc,
+    ManifestFetch,
+    Owner,
+    OwnershipProbeResult,
+    PackageRoot,
+    TagEntry,
+    Yank,
+)
 from tests.fakes import FakeGitHub, FakeRegistry, InMemoryFiles
 
 _OWNER = Owner(github="alice", github_id=1)
@@ -264,7 +272,27 @@ def test_floating_tag_drift_does_not_escalate() -> None:
     assert result == ExitCode.OK
 
 
-def test_vanished_tag_does_not_escalate() -> None:
+def test_yanked_vanished_tag_does_not_escalate() -> None:
+    # ADR-6 FP-2/FP-3: yank is grace — an explicit owner-authorized exemption
+    # from the registry-existence check, so a yanked tag vanishing entirely
+    # is not itself an anomaly.
+    files = InMemoryFiles()
+    registry = FakeRegistry()  # no tags registered at all -> tag no longer resolves
+    committed_digest = "sha256:" + "a" * 64
+    yanked_entry = TagEntry(
+        content=committed_digest, observed="T0", yanked=Yank(reason="cve", at="T0")
+    )
+    _put_root(files, "kitware", "cmake", _root(tags={"3.28.1": yanked_entry}))
+    _put_cas(files, "kitware", "cmake", committed_digest, b'{"platforms":[]}')
+
+    result = reconcile.run(_args(), files=files, registry=registry, github=FakeGitHub())
+
+    assert result == ExitCode.OK
+
+
+def test_non_yanked_vanished_tag_escalates_to_anomaly() -> None:
+    # ADR-6 FP-2/FP-3: everything else vanished-upstream is an anomaly, not
+    # a silent drop.
     files = InMemoryFiles()
     registry = FakeRegistry()  # no tags registered at all -> tag no longer resolves
     committed_digest = "sha256:" + "a" * 64
@@ -275,10 +303,12 @@ def test_vanished_tag_does_not_escalate() -> None:
         _root(tags={"3.28.1": TagEntry(content=committed_digest, observed="T0")}),
     )
     _put_cas(files, "kitware", "cmake", committed_digest, b'{"platforms":[]}')
+    github = FakeGitHub()
 
-    result = reconcile.run(_args(), files=files, registry=registry, github=FakeGitHub())
+    with pytest.raises(AnomalyError, match="tag-missing-upstream"):
+        reconcile.run(_args(), files=files, registry=registry, github=github)
 
-    assert result == ExitCode.OK
+    assert "tag-missing-upstream" in github.issues[_ISSUE_TITLE][1]
 
 
 def test_dangling_cas_reference_escalates() -> None:

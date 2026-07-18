@@ -16,15 +16,20 @@ outcome): `core/anomaly.py`'s pinned-tag mutations always escalate.
 — structural CAS-integrity concerns, independent of tag semantics (the exact
 same unconditional treatment `core/validate_entry.py`'s
 `check_no_dangling_references`/`check_digest_self_consistent` already give
-them). `verify_claims`'s `"digest-mismatch"`/`"tag-missing-upstream"`
-findings do **not** escalate on their own: a floating tag (`latest`, partial
-versions, variant-prefixed) drifting is the expected cascade-push behavior
-(ADR-1 D2/D3) — that exact same digest-mismatch, on a *pinned* tag, is
-already caught by the reused `check_tag_mutations` check above, so this
-avoids double-flagging one underlying phenomenon through two different
-finding shapes. A tag vanishing entirely is not itself an anomaly either
-(`core/anomaly.py`'s own documented open question — default: silent drop is
-fine, since verify-only reconcile no longer regenerates around it anyway).
+them). `verify_claims`'s `"digest-mismatch"` does **not** escalate on its
+own: a floating tag (`latest`, partial versions, variant-prefixed) drifting
+is the expected cascade-push behavior (ADR-1 D2/D3) — that exact same
+digest-mismatch, on a *pinned* tag, is already caught by the reused
+`check_tag_mutations` check above, so this avoids double-flagging one
+underlying phenomenon through two different finding shapes.
+
+`"tag-missing-upstream"` (ADR-6 FP-2/FP-3 — a decided rule, not an open
+question) **does** escalate, unless the committed `TagEntry.yanked is not
+None` for that tag: yank is grace, an explicit owner-authorized exemption
+from the registry-existence check; a tag vanishing from the registry with
+no yank marker at all is an anomaly, not a silent drop (`_PackageReport`
+carries the committed root's yanked-tag names so `_escalating_findings` can
+tell the two apart).
 
 A non-empty escalating-finding set opens/updates one anomaly issue
 (`GitHubPort.create_or_update_issue`, promoted onto the port this stage) and
@@ -83,6 +88,10 @@ class _PackageReport:
     package_id: PackageId
     pinned_mutations: tuple[AnomalyFinding, ...]
     claim_findings: tuple[ClaimFinding, ...]
+    yanked_tags: frozenset[str]
+    """Committed tag names with a non-`None` `TagEntry.yanked` marker — the
+    grace exemption `_escalating_findings` checks a `"tag-missing-upstream"`
+    finding's tag name against (ADR-6 FP-2/FP-3)."""
 
 
 def _root_path(package_id: PackageId) -> str:
@@ -168,9 +177,23 @@ def _verify_one(
     )
     cas_bytes = _cas_bytes_by_digest(files, package_id, wanted_digests)
     claim_findings = verify_claims(package_id, root, cas_bytes, registry)
+    yanked_tags = frozenset(tag for tag, entry in root.tags.items() if entry.yanked is not None)
     return _PackageReport(
-        package_id=package_id, pinned_mutations=pinned_mutations, claim_findings=claim_findings
+        package_id=package_id,
+        pinned_mutations=pinned_mutations,
+        claim_findings=claim_findings,
+        yanked_tags=yanked_tags,
     )
+
+
+def _escalates(finding: ClaimFinding, *, yanked_tags: frozenset[str]) -> bool:
+    """ADR-6 FP-2/FP-3: `"tag-missing-upstream"` escalates unless the
+    claimed tag is yanked (yank = grace, an explicit exemption from the
+    registry-existence check) — every other escalating kind is
+    unconditional."""
+    if finding.kind == "tag-missing-upstream":
+        return finding.detail not in yanked_tags
+    return finding.kind in _ESCALATING_CLAIM_KINDS
 
 
 def _escalating_findings(report: _PackageReport) -> tuple[str, ...]:
@@ -182,7 +205,7 @@ def _escalating_findings(report: _PackageReport) -> tuple[str, ...]:
     lines.extend(
         f"{report.package_id} {finding.kind}: {finding.detail}"
         for finding in report.claim_findings
-        if finding.kind in _ESCALATING_CLAIM_KINDS
+        if _escalates(finding, yanked_tags=report.yanked_tags)
     )
     return tuple(lines)
 

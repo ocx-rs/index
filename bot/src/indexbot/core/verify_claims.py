@@ -14,10 +14,14 @@ Pure given its injected `RegistryPort` and already-read CAS bytes
 decides disposition: `cli/validate.py`'s unprivileged PR gate treats any
 finding as a `ValidationError` (reject the PR — nothing was ever
 legitimately observed to mutate, the claim just isn't true right now);
-`cli/reconcile.py`'s nightly sweep treats certain finding kinds as an
-anomaly against already-committed history (exit 65) — same taxonomy, two
-different dispositions for two different trust contexts, mirroring
-`core/anomaly.py`'s existing finding-not-exception design.
+`cli/reconcile.py`'s nightly sweep escalates most finding kinds to an
+anomaly against already-committed history (exit 65), except a
+`"digest-mismatch"` on a floating (non-pinned) tag, and a
+`"tag-missing-upstream"` on a *yanked* tag (ADR-6 FP-2/FP-3 — yank is grace,
+an explicit exemption from the registry-existence check; see
+`cli/reconcile.py`'s module docstring for the full disposition table) — same
+taxonomy, two different dispositions for two different trust contexts,
+mirroring `core/anomaly.py`'s existing finding-not-exception design.
 """
 
 from __future__ import annotations
